@@ -14,7 +14,11 @@
 #include <vector>
 
 #include "libpowenetics/api.h"
+#include "libpowenetics/sample.h"
 #include "libpowenetics/types.h"
+
+#include "convert.h"
+#include "debug.h"
 
 
 /// <summary>
@@ -43,8 +47,9 @@ public:
     /// delivers these to <paramref name="callback" />.
     /// </summary>
     /// <typeparam name="TCallback">The type of the callback functor to be
-    /// invoked, which must accept two pointers to <c>byte_type</c> that
-    /// specify the range of the token.</typeparam>
+    /// invoked, which must accept a single <see cref="powenetics_sample" />
+    /// via which the information that have been parsed are returned.
+    /// </typeparam>
     /// <param name="data">The data to be parsed, which must be a
     /// non-<c>nullptr</c> pointer to <paramref name="cnt" /> bytes of data
     /// received from the device.</param>
@@ -66,6 +71,15 @@ private:
     static constexpr std::array<byte_type, 2> delimiter { 0xCA, 0xAC };
 
     /// <summary>
+    /// The expected number of bytes in a valid segment.
+    /// </summary>
+    /// <remarks>
+    /// A valid segment comprises a 16-bit sequence number and 13 samples of
+    /// 16-bit voltage data and 24-bit current data.
+    /// </remarks>
+    static constexpr std::size_t segment_length = 67;
+
+    /// <summary>
     /// Finds the first occurrence of <paramref name="delimiter" /> in
     /// <paramref name="data" /> and returns a pointer to the delimiter.
     /// </summary>
@@ -77,24 +91,36 @@ private:
         _In_ const std::size_t cnt);
 
     /// <summary>
+    /// Parse <paramref name="data" /> as voltage and current and advance
+    /// data past the data that have been parsed.
+    /// </summary>
+    /// <param name="data">The pointer to the begin of the sample, which must
+    /// designate at least 5 bytes.</param>
+    /// <param name="discard_threshold">The voltage threshold which must be
+    /// exceeded in order to generate a valid current reading. Otherwise,
+    /// the current reading will be set to zero.</param>
+    /// <returns>The parsed values.</returns>
+    static powenetics_voltage_current parse_value(
+        _In_reads_(5) _Out_ const byte_type *& data,
+        _In_ const float discard_threshold = 1.0f) noexcept;
+
+    /// <summary>
     /// Parses the given segment and if it has the expected size, invoke
     /// the callback.
     /// </summary>
-    /// <typeparam name="TCallback"></typeparam>
-    /// <param name="begin"></param>
-    /// <param name="end"></param>
-    /// <param name="callback"></param>
-    /// <returns></returns>
+    /// <typeparam name="TCallback">The type of the callback, which must accept
+    /// a (reference to a) <see cref="powenetics_sample" />.</typeparam>
+    /// <param name="begin">The begin of the sample, excluding the delimitor.
+    /// </param>
+    /// <param name="end">The end of the sample. This pointer is not valid any
+    /// more.</param>
+    /// <param name="callback">The callback to be invoked if the given range
+    /// of data contains <see cref="segment_length" /> bytes.</param>
+    /// <returns><c>true</c> if <paramref name="callback" /> was invoked,
+    /// <c>false</c> otherwise.</returns>
     template<class TCallback>
     static bool parse_segment(_In_reads_(end - begin) const byte_type *begin,
         _In_ const byte_type *end, TCallback&& callback);
-
-    /// <summary>
-    /// Convert two bytes in network-byte order to <see cref="std::uint16_t />.
-    /// </summary>
-    /// <param name="src"></param>
-    /// <returns></returns>
-    static std::uint16_t to_uint16(_In_reads_(2) const byte_type *src);
 
     std::vector<byte_type> _buffer;
 };

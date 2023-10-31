@@ -18,12 +18,12 @@
 /// The numeric values of the enumeration are compatible with the
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
-enum LIBPOWENETICS_ENUM powenetics_parity : std::uint8_t {
-    none = 0,
-    odd = 1,
-    even = 2,
-    mark = 3,
-    space = 4
+enum LIBPOWENETICS_ENUM powenetics_parity : uint8_t {
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, none) = 0,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, odd) = 1,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, even) = 2,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, mark) = 3,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, space) = 4
 };
 
 
@@ -35,10 +35,10 @@ enum LIBPOWENETICS_ENUM powenetics_parity : std::uint8_t {
 /// The numeric values of the enumeration are compatible with the
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
-enum LIBPOWENETICS_ENUM powenetics_stop_bits : std::uint8_t {
-    one = 0,
-    one_point_five = 1,
-    two = 2
+enum LIBPOWENETICS_ENUM powenetics_stop_bits : uint8_t {
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one) = 0,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one_point_five) = 1,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, two) = 2
 };
 
 
@@ -52,22 +52,22 @@ struct LIBPOWENETICS_API powenetics_serial_configuration {
     /// </summary>
     /// <remarks>
     /// <para>This member allows the library to discern between future versions
-    /// of the structure. It must be initialises to 1 in the first version of
-    /// the library.</para>
+    /// of the structure. It must be initialised to 2 in the first version of
+    /// the library (for Powenetics v2).</para>
     /// <para>This must be the first member of the struct and any future version
     /// of it.</para>
     /// </remarks>
-    std::uint32_t version;
+    uint32_t version;
 
     /// <summary>
     /// The baud rate.
     /// </summary>
-    std::uint32_t baud_rate;
+    uint32_t baud_rate;
 
     /// <summary>
     /// The number of data bits.
     /// </summary>
-    std::uint8_t data_bits;
+    uint8_t data_bits;
 
     /// <summary>
     /// The parity bit.
@@ -78,7 +78,6 @@ struct LIBPOWENETICS_API powenetics_serial_configuration {
     /// The number of stop bits.
     /// </summary>
     powenetics_stop_bits stop_bits;
-
 };
 
 

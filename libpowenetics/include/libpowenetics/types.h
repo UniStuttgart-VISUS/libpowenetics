@@ -45,9 +45,13 @@ enum HRESULT {
 // enums in C.
 #if defined(__cplusplus)
 #define LIBPOWENETICS_ENUM class
+#define LIBPOWENETICS_ENUM_SCOPE(scope, field) field
 #else /* defined(__cplusplus) */
 #define LIBPOWENETICS_ENUM
+#define LIBPOWENETICS_ENUM_SCOPE(scope, field) scope##_##field
 #endif /* defined(__cplusplus) */
+
+
 
 
 /// <summary>

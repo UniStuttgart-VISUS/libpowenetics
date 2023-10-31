@@ -15,6 +15,7 @@ stream_parser_v2::find_delimiter(_In_reads_(cnt) const byte_type *data,
         _In_ const std::size_t cnt) {
     if ((data == nullptr) || (cnt < delimiter.size())) {
         // Trivial reject.
+        _powenetics_debug("Invalid input provided to find_delimiter.\r\n");
         return nullptr;
     }
 
@@ -23,7 +24,7 @@ stream_parser_v2::find_delimiter(_In_reads_(cnt) const byte_type *data,
         // should ever change, we must check in a loop.
         assert(delimiter.size() == 2);
         if ((data[i] == delimiter.front())
-                && (i < cnt - 1)
+                && (i + 1 < cnt)
                 && (data[i + 1] == delimiter.back())) {
             return data + i;
         }
@@ -35,12 +36,22 @@ stream_parser_v2::find_delimiter(_In_reads_(cnt) const byte_type *data,
 
 
 /*
- * stream_parser_v2::to_uint16
+ * stream_parser_v2::parse_value
  */
-std::uint16_t stream_parser_v2::to_uint16(_In_reads_(2) const byte_type *src) {
-    std::uint16_t retval;
-    auto dst = reinterpret_cast<byte_type *>(&retval);
-    dst[0] = src[1];
-    dst[1] = src[0];
+powenetics_voltage_current stream_parser_v2::parse_value(
+        _In_reads_(5) _Out_ const byte_type *& data,
+        _In_ const float discard_threshold) noexcept {
+    powenetics_voltage_current retval;
+
+    retval.voltage = to_uint16(data) / 1000.0f;
+    data += sizeof(std::uint16_t);
+
+    if (retval.voltage > discard_threshold) {
+        retval.current = to_uint24(data) / 1000.0f;
+        data += 3;
+    } else {
+        retval.current = 0.0f;
+    }
+
     return retval;
 }

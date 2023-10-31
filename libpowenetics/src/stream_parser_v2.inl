@@ -90,11 +90,84 @@ bool stream_parser_v2::parse_segment(
     assert(begin != nullptr);
     assert(end != nullptr);
     assert(end > begin);
-    const auto retval = (end - begin) == 134;
+    assert(static_cast<bool>(callback));
+    const auto retval = (end - begin) == segment_length;
 
     if (retval) {
-        const auto segment_id = to_uint16(begin);
+        powenetics_sample sample;
+        sample.version = 2;
+        sample.sequence_number = to_uint16(begin);
+        // Note: The original implementation performs down-sampling on user
+        // request at this point. We do not do that in the library. Instead, the
+        // user must do that in the callback if it is desired.
 
+        // The samples following the sequence number comprise 16 bits of voltage
+        // data followed by 24 bit of current data each.
+        auto cur = begin + sizeof(std::uint16_t);
+
+        // Channel 1: ATX 3.3V. The ATX 10-pin connector does not have that,
+        // so parse_value will discard set the current to zero if a voltage
+        // lower than 1 is reported.
+        sample.atx_3_3v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 2: ATX 5V STB, only on 24-pin connectors. For 10-pin
+        // connectors, this will be overwritten by channel 6 later.
+        sample.atx_stb = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 3: ATX 12V
+        sample.atx_12v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 4: ATX 5V
+        sample.atx_5v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 5: EPS #1
+        sample.eps1 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 6: ATX 12V STB, only on 10-pin connectors. Note that the
+        // value still must be parsed to advance 'cur'!
+        {
+            auto s = parse_value(cur);
+            if (sample.atx_3_3v < 1.0f) {
+                sample.atx_stb = s;
+            }
+        }
+        assert(cur < end);
+
+        // Channel 7: EPS #3
+        sample.eps3 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 8: EPS #2
+        sample.eps2 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 9: PCIe #3
+        sample.pcie_12v3 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 10: PCIe #2
+        sample.pcie_12v2 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 11: PEG 3.3V
+        sample.peg_3_3v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 12: PEG 12V
+        sample.peg_12v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 13: PCIe #1
+        sample.pcie_12v1 = parse_value(cur);
+        assert(cur == end);
+
+        // Invoke the callback for the sample.
+        callback(sample);
     }
 
     return retval;
