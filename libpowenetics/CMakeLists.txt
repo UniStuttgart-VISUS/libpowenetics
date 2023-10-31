@@ -39,6 +39,8 @@ set(LibpoweneticsTestInclude "${CMAKE_CURRENT_SOURCE_DIR}/src" PARENT_SCOPE)
 
 
 # Install the library
+include(GNUInstallDirs)
+
 install(TARGETS ${PROJECT_NAME}
     EXPORT ${PROJECT_NAME}Targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
