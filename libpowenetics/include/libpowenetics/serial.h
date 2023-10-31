@@ -19,11 +19,11 @@
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
 enum LIBPOWENETICS_ENUM powenetics_parity : uint8_t {
-    powenetics_parity_none = 0,
-    powenetics_parity_odd = 1,
-    powenetics_parity_even = 2,
-    powenetics_parity_mark = 3,
-    powenetics_parity_space = 4
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, none) = 0,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, odd) = 1,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, even) = 2,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, mark) = 3,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, space) = 4
 };
 
 
@@ -36,9 +36,9 @@ enum LIBPOWENETICS_ENUM powenetics_parity : uint8_t {
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
 enum LIBPOWENETICS_ENUM powenetics_stop_bits : uint8_t {
-    powenetics_stop_bits_one = 0,
-    powenetics_stop_bits_one_point_five = 1,
-    powenetics_stop_bits_two = 2
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one) = 0,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one_point_five) = 1,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, two) = 2
 };
 
 
@@ -78,7 +78,6 @@ struct LIBPOWENETICS_API powenetics_serial_configuration {
     /// The number of stop bits.
     /// </summary>
     powenetics_stop_bits stop_bits;
-
 };
 
 

@@ -32,8 +32,8 @@ namespace functions {
                 Assert::AreEqual(S_OK, actual, L"Initialisation succeeded", LINE_INFO());
                 Assert::AreEqual(std::uint32_t(921600), config.baud_rate, L"baud_rate set", LINE_INFO());
                 Assert::AreEqual(std::uint8_t(8), config.data_bits, L"data_bits set", LINE_INFO());
-                Assert::AreEqual(int(powenetics_parity::powenetics_parity_none), int(config.parity), L"data_bits set", LINE_INFO());
-                Assert::AreEqual(int(powenetics_stop_bits::powenetics_stop_bits_one), int(config.stop_bits), L"stop_bits set", LINE_INFO());
+                Assert::AreEqual(int(powenetics_parity::none), int(config.parity), L"data_bits set", LINE_INFO());
+                Assert::AreEqual(int(powenetics_stop_bits::one), int(config.stop_bits), L"stop_bits set", LINE_INFO());
             }
 
         }

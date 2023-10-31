@@ -20,8 +20,8 @@ HRESULT LIBPOWENETICS_API powenetics_initialise_serial_configuration(
         case 2:
             config->baud_rate = 921600;
             config->data_bits = 8;
-            config->parity = powenetics_parity::powenetics_parity_none;
-            config->stop_bits = powenetics_stop_bits::powenetics_stop_bits_one;
+            config->parity = powenetics_parity::none;
+            config->stop_bits = powenetics_stop_bits::one;
             return S_OK;
 
         default:
