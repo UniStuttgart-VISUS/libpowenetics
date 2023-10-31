@@ -50,6 +50,7 @@ bool stream_parser_v2::parse_segment(
     if (retval) {
         dst.version = 2;
         dst.sequence_number = to_uint16(begin);
+        dst.timestamp = ::powenetics_make_timestamp();
         // Note: The original implementation performs down-sampling on user
         // request at this point. We do not do that in the library. Instead, the
         // user must do that in the callback if it is desired.
