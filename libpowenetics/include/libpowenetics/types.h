@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <cinttypes>
-#include <cstddef>
+#include <inttypes.h>
+#include <stddef.h>
 
 #if defined(_WIN32)
 #include <sal.h>
@@ -50,8 +50,6 @@ enum HRESULT {
 #define LIBPOWENETICS_ENUM
 #define LIBPOWENETICS_ENUM_SCOPE(scope, field) scope##_##field
 #endif /* defined(__cplusplus) */
-
-
 
 
 /// <summary>

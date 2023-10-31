@@ -18,13 +18,13 @@
 /// The numeric values of the enumeration are compatible with the
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
-enum LIBPOWENETICS_ENUM powenetics_parity : uint8_t {
+typedef enum LIBPOWENETICS_ENUM powenetics_parity_t {
     LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, none) = 0,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, odd) = 1,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, even) = 2,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, mark) = 3,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_parity, space) = 4
-};
+} powenetics_parity;
 
 
 /// <summary>
@@ -35,17 +35,17 @@ enum LIBPOWENETICS_ENUM powenetics_parity : uint8_t {
 /// The numeric values of the enumeration are compatible with the
 /// <see cref="DCB" /> structure on Windows.
 /// </remarks>
-enum LIBPOWENETICS_ENUM powenetics_stop_bits : uint8_t {
+typedef enum LIBPOWENETICS_ENUM powenetics_stop_bits_t {
     LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one) = 0,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, one_point_five) = 1,
     LIBPOWENETICS_ENUM_SCOPE(powenetics_stop_bits, two) = 2
-};
+} powenetics_stop_bits;
 
 
 /// <summary>
 /// Configures the serial port for talking with a Powenetics v2 device.
 /// </summary>
-struct LIBPOWENETICS_API powenetics_serial_configuration {
+typedef struct LIBPOWENETICS_API powenetics_serial_configuration_t {
 
     /// <summary>
     /// The version of the structure.
@@ -78,7 +78,7 @@ struct LIBPOWENETICS_API powenetics_serial_configuration {
     /// The number of stop bits.
     /// </summary>
     powenetics_stop_bits stop_bits;
-};
+} powenetics_serial_configuration;
 
 
 #if defined(__cplusplus)

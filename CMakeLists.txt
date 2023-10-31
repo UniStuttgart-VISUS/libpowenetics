@@ -35,3 +35,7 @@ endif ()
 if (PoweneticsCanBuildTests AND POWENETICS_BuildTests)
     add_subdirectory(tests)
 endif ()
+
+
+# Build the test for the C API.
+add_subdirectory(cclient)

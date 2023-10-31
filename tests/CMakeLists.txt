@@ -20,7 +20,7 @@ add_library(${PROJECT_NAME} SHARED ${HeaderFiles} ${SourceFiles})
 
 
 # Configure the compiler.
-target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
+#target_compile_definitions(${PROJECT_NAME} PRIVATE UNICODE _UNICODE)
 
 
 # In the test driver, the compiler needs to know about the private includes of
