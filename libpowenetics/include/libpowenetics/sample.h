@@ -7,6 +7,7 @@
 #pragma once
 
 #include "libpowenetics/api.h"
+#include "libpowenetics/timestamp.h"
 #include "libpowenetics/types.h"
 
 
@@ -19,7 +20,14 @@
 /// multiplying voltage and current.</para>
 /// </remarks>
 struct LIBPOWENETICS_API powenetics_voltage_current {
+    /// <summary>
+    /// The voltage reading in Volts.
+    /// </summary>
     float voltage;
+
+    /// <summary>
+    /// The current readings in Amperes.
+    /// </summary>
     float current;
 };
 
@@ -40,7 +48,7 @@ struct LIBPOWENETICS_API powenetics_sample {
     /// <para>This field must always remain at the first version of the
     /// strucuture, even if additional fields are added.</para>
     /// </remarks>
-    std::uint32_t version;
+    uint32_t version;
 
     /// <summary>
     /// The sequence number of the sample.
@@ -48,7 +56,7 @@ struct LIBPOWENETICS_API powenetics_sample {
     /// <remarks>
     /// <para>This must always remain the second field in the structure.</para>
     /// </remarks>
-    std::uint16_t sequence_number;
+    uint16_t sequence_number;
 
     /// <summary>
     /// The timestamp of the sample.
@@ -57,7 +65,7 @@ struct LIBPOWENETICS_API powenetics_sample {
     /// For Powenetics v2, the timestamp is the system time at which the sample
     /// was received from the serial port.
     /// </remarks>
-    std::uint64_t timestamp;
+    powenetics_timestamp timestamp;
 
     /* Begin of data measured by Powenetics v2. */
 

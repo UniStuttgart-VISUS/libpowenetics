@@ -18,30 +18,12 @@
 /// </summary>
 typedef std::ratio<1, 10000000> filetime_period;
 
+
 /// <summary>
 /// The STL representation of <see cref="FILETIME" />.
 /// </summary>
 typedef std::chrono::duration<powenetics_timestamp, filetime_period>
     filetime_duration;
-
-
-/*
- * ::powenetics_make_timestamp
- */
-powenetics_timestamp powenetics_make_timestamp(void){
-#if defined(_WIN32)
-    FILETIME file_time;
-    LARGE_INTEGER retval;
-
-    ::GetSystemTimeAsFileTime(&file_time);
-    retval.HighPart = file_time.dwHighDateTime;
-    retval.LowPart = file_time.dwLowDateTime;
-
-    return retval.QuadPart;
-#else /* defined(_WIN32) */
-    return ::_powenetics_make_timestamp();
-#endif /* defined(_WIN32) */
-}
 
 
 /*
@@ -66,4 +48,23 @@ powenetics_timestamp _powenetics_make_timestamp(void) noexcept {
 
     // Transform the origin of the timestamp clock to the origin of FILETIME.
     return (dt + dz).count();
+}
+
+
+/*
+ * ::powenetics_make_timestamp
+ */
+powenetics_timestamp powenetics_make_timestamp(void){
+#if defined(_WIN32)
+    FILETIME file_time;
+    LARGE_INTEGER retval;
+
+    ::GetSystemTimeAsFileTime(&file_time);
+    retval.HighPart = file_time.dwHighDateTime;
+    retval.LowPart = file_time.dwLowDateTime;
+
+    return retval.QuadPart;
+#else /* defined(_WIN32) */
+    return ::_powenetics_make_timestamp();
+#endif /* defined(_WIN32) */
 }

@@ -36,6 +36,95 @@ stream_parser_v2::find_delimiter(_In_reads_(cnt) const byte_type *data,
 
 
 /*
+ * stream_parser_v2::parse_segment
+ */
+bool stream_parser_v2::parse_segment(
+        _Out_ powenetics_sample& dst,
+        _In_reads_(end - begin) const byte_type *begin,
+        _In_ const byte_type *end) noexcept {
+    assert(begin != nullptr);
+    assert(end != nullptr);
+    assert(end > begin);
+    const auto retval = (end - begin) == segment_length;
+
+    if (retval) {
+        dst.version = 2;
+        dst.sequence_number = to_uint16(begin);
+        // Note: The original implementation performs down-sampling on user
+        // request at this point. We do not do that in the library. Instead, the
+        // user must do that in the callback if it is desired.
+
+        // The samples following the sequence number comprise 16 bits of voltage
+        // data followed by 24 bit of current data each.
+        auto cur = begin + sizeof(std::uint16_t);
+
+        // Channel 1: ATX 3.3V. The ATX 10-pin connector does not have that,
+        // so parse_value will discard set the current to zero if a voltage
+        // lower than 1 is reported.
+        dst.atx_3_3v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 2: ATX 5V STB, only on 24-pin connectors. For 10-pin
+        // connectors, this will be overwritten by channel 6 later.
+        dst.atx_stb = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 3: ATX 12V
+        dst.atx_12v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 4: ATX 5V
+        dst.atx_5v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 5: EPS #1
+        dst.eps1 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 6: ATX 12V STB, only on 10-pin connectors. Note that the
+        // value still must be parsed to advance 'cur'!
+        {
+            auto s = parse_value(cur);
+            if (dst.atx_3_3v.voltage < 1.0f) {
+                dst.atx_stb = s;
+            }
+        }
+        assert(cur < end);
+
+        // Channel 7: EPS #3
+        dst.eps3 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 8: EPS #2
+        dst.eps2 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 9: PCIe #3
+        dst.pcie_12v3 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 10: PCIe #2
+        dst.pcie_12v2 = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 11: PEG 3.3V
+        dst.peg_3_3v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 12: PEG 12V
+        dst.peg_12v = parse_value(cur);
+        assert(cur < end);
+
+        // Channel 13: PCIe #1
+        dst.pcie_12v1 = parse_value(cur);
+        assert(cur == end);
+    }
+
+    return retval;
+}
+
+
+/*
  * stream_parser_v2::parse_value
  */
 powenetics_voltage_current stream_parser_v2::parse_value(

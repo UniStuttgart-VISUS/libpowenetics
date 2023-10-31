@@ -17,10 +17,10 @@ enum LIBPOWENETICS_ENUM powenetics_operation_mode {
     /// <summary>
     /// 
     /// </summary>
-    bootload,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_operation_mode, bootload),
 
     /// <summary>
     /// Starts streaming data from the device.
     /// </summary>
-    stream
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_operation_mode, stream)
 };

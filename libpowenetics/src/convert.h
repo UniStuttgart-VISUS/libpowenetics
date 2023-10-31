@@ -9,6 +9,8 @@
 #include <cassert>
 #include <cinttypes>
 
+#include "libpowenetics/api.h"
+
 
 /// <summary>
 /// Convert two bytes in network-byte order to <see cref="std::uint16_t />.
@@ -17,7 +19,8 @@
 /// </param>
 /// <returns>The little-endian number represented by the first two bytes in
 /// <paramref name="src" />.</returns>
-inline std::uint16_t to_uint16(_In_reads_(2) const std::uint8_t *src) noexcept {
+inline std::uint16_t LIBPOWENETICS_TEST_API to_uint16(
+        _In_reads_(2) const std::uint8_t *src) noexcept {
     assert(src != nullptr);
     std::uint16_t retval;
     auto dst = reinterpret_cast<std::uint8_t *>(&retval);
@@ -35,7 +38,8 @@ inline std::uint16_t to_uint16(_In_reads_(2) const std::uint8_t *src) noexcept {
 /// order.</param>
 /// <returns>The little-endian number represented by the first three bytes in
 /// <paramref name="src" />.</returns>
-inline std::uint32_t to_uint24(_In_reads_(3) const std::uint8_t *src) noexcept {
+inline std::uint32_t LIBPOWENETICS_TEST_API to_uint24(
+        _In_reads_(3) const std::uint8_t *src) noexcept {
     assert(src != nullptr);
     std::uint32_t retval = 0;
     auto dst = reinterpret_cast<std::uint8_t *>(&retval);

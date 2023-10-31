@@ -91,6 +91,22 @@ private:
         _In_ const std::size_t cnt);
 
     /// <summary>
+    /// Parses the given segment and if it has the expected size, invoke
+    /// the callback.
+    /// </summary>
+    /// <param name="dst">The variable receiving the sample, provided the data
+    /// are valid.</param>
+    /// <param name="begin">The begin of the sample, excluding the delimitor.
+    /// </param>
+    /// <param name="end">The end of the sample. This pointer is not valid any
+    /// more.</param>
+    /// <returns><c>true</c> if <paramref name="dst" /> was written,
+    /// <c>false</c> otherwise.</returns>
+    static bool parse_segment(_Out_ powenetics_sample& dst,
+        _In_reads_(end - begin) const byte_type *begin,
+        _In_ const byte_type *end) noexcept;
+
+    /// <summary>
     /// Parse <paramref name="data" /> as voltage and current and advance
     /// data past the data that have been parsed.
     /// </summary>
@@ -103,24 +119,6 @@ private:
     static powenetics_voltage_current parse_value(
         _In_reads_(5) _Out_ const byte_type *& data,
         _In_ const float discard_threshold = 1.0f) noexcept;
-
-    /// <summary>
-    /// Parses the given segment and if it has the expected size, invoke
-    /// the callback.
-    /// </summary>
-    /// <typeparam name="TCallback">The type of the callback, which must accept
-    /// a (reference to a) <see cref="powenetics_sample" />.</typeparam>
-    /// <param name="begin">The begin of the sample, excluding the delimitor.
-    /// </param>
-    /// <param name="end">The end of the sample. This pointer is not valid any
-    /// more.</param>
-    /// <param name="callback">The callback to be invoked if the given range
-    /// of data contains <see cref="segment_length" /> bytes.</param>
-    /// <returns><c>true</c> if <paramref name="callback" /> was invoked,
-    /// <c>false</c> otherwise.</returns>
-    template<class TCallback>
-    static bool parse_segment(_In_reads_(end - begin) const byte_type *begin,
-        _In_ const byte_type *end, TCallback&& callback);
 
     std::vector<byte_type> _buffer;
 };

@@ -15,21 +15,15 @@
 #define LIBPOWENETICS_API __declspec(dllimport)
 #endif /* defined(LIBPOWENETICS_EXPORTS)*/
 
-#if (defined(DEBUG) || defined(_DEBUG))
-
-#if defined(LIBPOWENETICS_EXPORTS)
-#define LIBPOWENETICS_TEST_API __declspec(dllexport)
-#else /* defined(LIBPOWENETICS_EXPORTS) */
-#define LIBPOWENETICS_TEST_API __declspec(dllimport)
-#endif /* defined(LIBPOWENETICS_EXPORTS) */
-
-#else /* (defined(DEBUG) || defined(_DEBUG)) */
-#define LIBPOWENETICS_TEST_API
-#endif /* (defined(DEBUG) || defined(_DEBUG)) */
-
 #else /* (defined(_MSC_VER) && !defined(LIBPOWENETICS_STATIC)) */
 
 #define LIBPOWENETICS_API
-#define LIBPOWENETICS_TEST_API
 
 #endif /* (defined(_MSC_VER) && !defined(LIBPOWENETICS_STATIC)) */
+
+
+#if defined(LIBPOWENETICS_EXPOSE_TO_TESTING)
+#define LIBPOWENETICS_TEST_API LIBPOWENETICS_API
+#else /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */
+#define LIBPOWENETICS_TEST_API
+#endif /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */

@@ -6,8 +6,20 @@ cmake_minimum_required(VERSION 3.24.0)
 project(powenetics)
 
 
+# User-configurable options
+option(POWENETICS_BuildTests "Build the test driver" OFF)
+
+
+#  Global compiler options, which are derived from the settings above.
+add_compile_definitions(UNICODE _UNICODE)
+if (POWENETICS_BuildTests)
+    add_compile_definitions(LIBPOWENETICS_EXPOSE_TO_TESTING)
+endif ()
+
+
 # Build the library itself.
 add_subdirectory(libpowenetics)
+
 
 # Build the test driver if possible. The check for that is a first-class hack
 # adapted from https://jslav.livejournal.com/13059.html to get  access to the VC
@@ -15,11 +27,11 @@ add_subdirectory(libpowenetics)
 string(TOLOWER ${CMAKE_MAKE_PROGRAM} MakeProgramme)
 if ("${MakeProgramme}" MATCHES "/msbuild.+")
     string(REGEX REPLACE "/msbuild.+" "/VC" VcInstallDir ${MakeProgramme})
-    set(PoweneticsBuildTests TRUE)
+    set(PoweneticsCanBuildTests TRUE)
 else ()
-    set(PoweneticsBuildTests FALSE)
+    set(PoweneticsCanBuildTests FALSE)
 endif ()
 
-if (PoweneticsBuildTests)
+if (PoweneticsCanBuildTests AND POWENETICS_BuildTests)
     add_subdirectory(tests)
 endif ()

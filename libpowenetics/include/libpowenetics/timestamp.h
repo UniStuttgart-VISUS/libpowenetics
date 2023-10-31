@@ -20,12 +20,7 @@ extern "C" {
 /// </summary>
 typedef int64_t powenetics_timestamp;
 
-/// <summary>
-/// Creates a timestamp from the current system time.
-/// </summary>
-/// <returns>The timestamp in 100ns units.</returns>
-powenetics_timestamp LIBPOWENETICS_API powenetics_make_timestamp(void);
-
+#if defined(LIBPOWENETICS_EXPOSE_TO_TESTING)
 /// <summary>
 /// Creates a timestamp from the current system time using the STL clock.
 /// </summary>
@@ -37,6 +32,13 @@ powenetics_timestamp LIBPOWENETICS_API powenetics_make_timestamp(void);
 /// </remarks>
 /// <returns>The timestamp in 100ns units.</returns>
 powenetics_timestamp LIBPOWENETICS_TEST_API _powenetics_make_timestamp(void);
+#endif /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */
+
+/// <summary>
+/// Creates a timestamp from the current system time.
+/// </summary>
+/// <returns>The timestamp in 100ns units.</returns>
+powenetics_timestamp LIBPOWENETICS_API powenetics_make_timestamp(void);
 
 #if defined(__cplusplus)
 } /* extern "C" */
