@@ -32,6 +32,11 @@ namespace functions {
                 std::uint8_t input[] = { 1, 0 };
                 Assert::AreEqual(int(256), int(::to_uint16(input)), L"1, 0", LINE_INFO());
             }
+
+            {
+                std::uint8_t input[] = { 0x78, 0x5F };
+                Assert::AreEqual(int(30815), int(::to_uint16(input)), L"0x78, 0x5F", LINE_INFO());
+            }
         }
 
         TEST_METHOD(to_uint24) {
@@ -48,6 +53,16 @@ namespace functions {
             {
                 std::uint8_t input[] = { 0, 1, 0 };
                 Assert::AreEqual(int(256), int(::to_uint24(input)), L"0, 1, 0", LINE_INFO());
+            }
+
+            {
+                std::uint8_t input[] = { 0, 1, 0 };
+                Assert::AreEqual(int(256), int(::to_uint24(input)), L"0, 1, 0", LINE_INFO());
+            }
+
+            {
+                std::uint8_t input[] = { 0x29, 0x61, 0x33 };
+                Assert::AreEqual(int(2711859), int(::to_uint24(input)), L"0x29, 0x61, 0x33", LINE_INFO());
             }
         }
 
