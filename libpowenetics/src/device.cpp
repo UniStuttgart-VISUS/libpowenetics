@@ -9,6 +9,7 @@
 #include <cassert>
 
 #include "commands.h"
+#include "debug.h"
 #include "thread_name.h"
 
 
@@ -26,6 +27,7 @@ powenetics_device::~powenetics_device(void) noexcept {
     this->close();
 
     if (this->_thread.joinable()) {
+        _powenetics_debug("Waiting for serial reader thread to exit ...\r\n");
         this->_thread.join();
     }
 }
@@ -100,11 +102,12 @@ HRESULT powenetics_device::close(void) noexcept {
 HRESULT powenetics_device::open(
         _In_z_ const powenetics_char *com_port,
         _In_ const powenetics_serial_configuration *config) noexcept {
-    if ((com_port == nullptr) || (config == nullptr)) {
-        return E_INVALIDARG;
-    }
+    assert(com_port != nullptr);
+    assert(config != nullptr);
 
     if (this->_handle != invalid_handle) {
+        _powenetics_debug("Tried opening a powenetics_device that is already "
+            "connected...\r\n");
         return WS_E_INVALID_OPERATION;
     }
 
@@ -112,9 +115,10 @@ HRESULT powenetics_device::open(
     this->_handle = ::CreateFileW(com_port, GENERIC_READ | GENERIC_WRITE, 0,
         nullptr, OPEN_EXISTING, 0, NULL);
     if (this->_handle == invalid_handle) {
-        return HRESULT_FROM_WIN32(::GetLastError());
+        auto retval = HRESULT_FROM_WIN32(::GetLastError());
+        _powenetics_debug("CreateFile on COM port failed.\r\n");
+        return retval;
     }
-
 
     {
         DCB dcb;
@@ -122,7 +126,9 @@ HRESULT powenetics_device::open(
         dcb.DCBlength = sizeof(dcb);
 
         if (!::GetCommState(this->_handle, &dcb)) {
-            return HRESULT_FROM_WIN32(::GetLastError());
+            auto retval = HRESULT_FROM_WIN32(::GetLastError());
+            _powenetics_debug("Retrieving state of COM port failed.\r\n");
+            return retval;
         }
 
         dcb.BaudRate = static_cast<DWORD>(config->baud_rate);
@@ -131,7 +137,9 @@ HRESULT powenetics_device::open(
         dcb.StopBits = static_cast<BYTE>(config->stop_bits);
 
         if (!::SetCommState(this->_handle, &dcb)) {
-            return HRESULT_FROM_WIN32(::GetLastError());
+            auto retval = HRESULT_FROM_WIN32(::GetLastError());
+            _powenetics_debug("Updating state of COM port failed.\r\n");
+            return retval;
         }
     }
 
@@ -148,6 +156,8 @@ HRESULT powenetics_device::open(
  */
 HRESULT powenetics_device::reset_calibration(void) noexcept {
     if (this->_handle != invalid_handle) {
+        _powenetics_debug("reset_calibration attempted on disconnected "
+            "powenetics_device.\r\n");
         return WS_E_INVALID_OPERATION;
     } else {
         return this->write(commands_v2::clear_calibration);
@@ -159,7 +169,9 @@ HRESULT powenetics_device::reset_calibration(void) noexcept {
  * powenetics_device::start_streaming
  */
 HRESULT powenetics_device::start_streaming(void) noexcept {
-    auto retval = S_OK;
+    auto retval = (this->_handle != invalid_handle)
+        ? S_OK
+        : WS_E_INVALID_OPERATION;
 
     if (SUCCEEDED(retval)) {
         retval = this->write(commands_v2::calibration_ok);

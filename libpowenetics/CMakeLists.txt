@@ -24,7 +24,7 @@ source_group("Resource Files" FILES ${ResourceFiles})
 
 
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${Header} ${SourceFiles} ${ResourceFiles})
+add_library(${PROJECT_NAME} SHARED ${Header} ${SourceFiles} ${ResourceFiles} "src/convert.h")
 target_compile_definitions(${PROJECT_NAME} PRIVATE LIBPOWENETICS_EXPORTS)
 target_include_directories(${PROJECT_NAME}
     PUBLIC
