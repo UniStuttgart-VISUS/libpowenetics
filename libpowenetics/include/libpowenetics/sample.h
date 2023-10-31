@@ -50,6 +50,15 @@ struct LIBPOWENETICS_API powenetics_sample {
     /// </remarks>
     std::uint16_t sequence_number;
 
+    /// <summary>
+    /// The timestamp of the sample.
+    /// </summary>
+    /// <remarks>
+    /// For Powenetics v2, the timestamp is the system time at which the sample
+    /// was received from the serial port.
+    /// </remarks>
+    std::uint64_t timestamp;
+
     /* Begin of data measured by Powenetics v2. */
 
     /// <summary>

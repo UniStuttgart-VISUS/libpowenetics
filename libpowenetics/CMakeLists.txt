@@ -9,8 +9,8 @@ project(libpowenetics)
 set(IncludeDirectory "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(SourceDirectory "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-file(GLOB_RECURSE PublicHeaderFiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${IncludeDirectory}" "*.h")
-file(GLOB_RECURSE PrivateHeaderFiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${SourceDirectory}" "*.h")
+file(GLOB_RECURSE PublicHeaderFiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${IncludeDirectory}" "*.h" "*.inl")
+file(GLOB_RECURSE PrivateHeaderFiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${SourceDirectory}" "*.h" "*.inl")
 set (HeaderFiles ${PublicHeaderFiles} ${PrivateHeaderFiles})
 file(GLOB_RECURSE SourceFiles RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${SourceDirectory}" "*.cpp")
 if (WIN32)
@@ -24,7 +24,7 @@ source_group("Resource Files" FILES ${ResourceFiles})
 
 
 # Define the target
-add_library(${PROJECT_NAME} SHARED ${Header} ${SourceFiles} ${ResourceFiles} "src/convert.h")
+add_library(${PROJECT_NAME} SHARED ${HeaderFiles} ${SourceFiles} ${ResourceFiles})
 target_compile_definitions(${PROJECT_NAME} PRIVATE LIBPOWENETICS_EXPORTS)
 target_include_directories(${PROJECT_NAME}
     PUBLIC
@@ -32,3 +32,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${IncludeDirectory}>
     PRIVATE
         $<BUILD_INTERFACE:${SourceDirectory}>)
+
+
+# Provide the internal API to the unit tests.
+set(LibpoweneticsTestInclude "${CMAKE_CURRENT_SOURCE_DIR}/src" PARENT_SCOPE)
