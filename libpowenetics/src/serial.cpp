@@ -17,7 +17,7 @@ HRESULT LIBPOWENETICS_API powenetics_initialise_serial_configuration(
     }
 
     switch (config->version) {
-        case 1:
+        case 2:
             config->baud_rate = 921600;
             config->data_bits = 8;
             config->parity = powenetics_parity::none;

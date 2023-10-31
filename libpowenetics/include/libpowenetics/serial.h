@@ -52,8 +52,8 @@ struct LIBPOWENETICS_API powenetics_serial_configuration {
     /// </summary>
     /// <remarks>
     /// <para>This member allows the library to discern between future versions
-    /// of the structure. It must be initialises to 1 in the first version of
-    /// the library.</para>
+    /// of the structure. It must be initialised to 2 in the first version of
+    /// the library (for Powenetics v2).</para>
     /// <para>This must be the first member of the struct and any future version
     /// of it.</para>
     /// </remarks>

@@ -41,7 +41,7 @@ HRESULT powenetics_close(_In_ const powenetics_handle handle) {
  */
 HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
         _In_z_ const powenetics_char *com_port,
-        _In_ const powenetics_serial_configuration *config) {
+        _In_opt_ const powenetics_serial_configuration *config) {
     if (out_handle == nullptr) {
         _powenetics_debug("Invalid storage location for handle provided.\r\n");
         return E_INVALIDARG;
@@ -50,9 +50,16 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
         _powenetics_debug("Invalid COM port provided.\r\n");
         return E_INVALIDARG;
     }
+
+    powenetics_serial_configuration dft_conf;
     if (config == nullptr) {
-        _powenetics_debug("Invalid serial port configuration provided.\r\n");
-        return E_INVALIDARG;
+        dft_conf.version = 2;
+        auto retval = powenetics_initialise_serial_configuration(&dft_conf);
+        if (retval != S_OK) {
+            _powenetics_debug("Failed to initialise default serial "
+                "configuration.\r\n");
+            return retval;
+        }
     }
 
     *out_handle = new (std::nothrow) powenetics_device();
@@ -61,7 +68,8 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
         return E_OUTOFMEMORY;
     }
 
-    auto retval = (**out_handle).open(com_port, config);
+    auto conf = (config != nullptr) ? config : &dft_conf;
+    auto retval = (**out_handle).open(com_port, conf);
     if (retval != S_OK) {
         _powenetics_debug("Failed to open powenetics_device.\r\n");
         delete *out_handle;
