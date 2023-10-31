@@ -39,7 +39,7 @@ jobs:
     displayName: 'Configure'
     inputs:
       workingDirectory: '_build'
-      cmakeArgs: '.. -G"$(generator)" -A"$(buildPlatform)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)"'
+      cmakeArgs: '.. -G"$(generator)" -A"$(buildPlatform)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)" -DPOWENETICS_BuildTests="ON"'
 
   - task: VSBuild@1
     displayName: 'Build'

@@ -10,6 +10,7 @@
 
 #include "commands.h"
 #include "debug.h"
+#include "stream_parser_v2.h"
 #include "thread_name.h"
 
 
@@ -193,6 +194,7 @@ void powenetics_device::read(void) {
 
     std::vector<byte_type> buffer;
     buffer.resize(4 * 1024);
+    stream_parser_v2 parser;
     DWORD read;
 
     while (::ReadFile(this->_handle,
@@ -200,7 +202,7 @@ void powenetics_device::read(void) {
             static_cast<DWORD>(buffer.size()),
             &read,
             nullptr)) {
-
+        //parser.
 
 
     }
@@ -229,7 +231,10 @@ HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
         rem -= written;
     }
 
-    return HRESULT_FROM_WIN32(::GetLastError());
+    auto retval = HRESULT_FROM_WIN32(::GetLastError());
+    _powenetics_debug("I/O error while sending a command to the "
+        "Powenetics device.\r\n");
+    return retval;
 
 #else /* defined(_WIN32) */
     throw "TODO";
