@@ -13,6 +13,7 @@
 
 #include "libpowenetics/api.h"
 #include "libpowenetics/operation_mode.h"
+#include "libpowenetics/sample.h"
 #include "libpowenetics/serial.h"
 
 #include "stream_parser_v2.h"
@@ -44,6 +45,9 @@ public:
 
     HRESULT calibrate(void) noexcept;
 
+    /// <summary>
+    /// Close the serial port connection to the device.
+    /// </summary>
     HRESULT close(void) noexcept;
 
     /// <summary>
@@ -53,9 +57,17 @@ public:
     HRESULT open(_In_z_ const powenetics_char *com_port,
         _In_ const powenetics_serial_configuration *config) noexcept;
 
+    /// <summary>
+    /// Instruct the device to clear all calibration.
+    /// </summary>
     HRESULT reset_calibration(void) noexcept;
 
-    HRESULT start_streaming(void) noexcept;
+    /// <summary>
+    /// Start streaming data from the device and deliver it to the given
+    /// <paramref name="callback" /> function.
+    /// </summary>
+    HRESULT start_streaming(_In_ const powenetics_data_callback callback,
+        _In_opt_ void *context) noexcept;
 
 private:
 
@@ -98,6 +110,8 @@ private:
         return this->write(data.data(), data.size());
     }
 
+    powenetics_data_callback _callback;
+    void *_context;
     handle_type _handle;
     std::thread _thread;
 };

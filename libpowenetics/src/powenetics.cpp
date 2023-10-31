@@ -93,8 +93,10 @@ HRESULT powenetics_reset_calibration(_In_ const powenetics_handle handle) {
 /*
  * ::powenetics_start_streaming
  */
-HRESULT powenetics_start_streaming(_In_ const powenetics_handle handle) {
+HRESULT powenetics_start_streaming(_In_ const powenetics_handle handle,
+        _In_ const powenetics_data_callback callback,
+        _In_opt_ void *context) {
     return (handle == nullptr)
         ? E_HANDLE
-        : handle->start_streaming();
+        : handle->start_streaming(callback, context);
 }

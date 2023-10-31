@@ -15,6 +15,19 @@
 
 
 /// <summary>
+/// A callback to receive the samples from the device.
+/// </summary>
+/// <param name="src"></param>
+/// <param name="sample"></param>
+/// <param name="ctx"></param>
+void on_sample(_In_ powenetics_handle src,
+        _In_ const powenetics_sample *sample,
+        _In_opt_ void *ctx) {
+
+}
+
+
+/// <summary>
 /// The entry point of the test application for the C-style API.
 /// </summary>
 /// <remarks>
@@ -41,7 +54,7 @@ int _tmain(int argc, _TCHAR **argv) {
     }
 
     if (SUCCEEDED(hr)) {
-        hr = powenetics_start_streaming(handle);
+        hr = powenetics_start_streaming(handle, on_sample, NULL);
     }
 
     // Cleanup phase.

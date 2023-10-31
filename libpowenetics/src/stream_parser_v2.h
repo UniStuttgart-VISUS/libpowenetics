@@ -31,6 +31,8 @@
 /// it will deliver it to the registered callback.</para>
 /// <para>The parser is stateful and can be used for only one stream as it
 /// buffers unused input until it is called next.</para>
+/// <para>The parser is <i>not thread-safe!</i> Make sure to enqueue new data
+/// always from the same thread or serialise the operation somehow.</para>
 /// </remarks>
 class LIBPOWENETICS_TEST_API stream_parser_v2 final {
 
@@ -42,23 +44,32 @@ public:
     typedef std::uint8_t byte_type;
 
     /// <summary>
+    /// Discards any buffered data from previous calls that could not be
+    /// delivered.
+    /// </summary>
+    inline void flush(void) {
+        this->_buffer.clear();
+    }
+
+    /// <summary>
     /// Splits the given <paramref name="data" /> and potentially a remainder
-    /// that could not be processed in the previous call into segments and
-    /// delivers these to <paramref name="callback" />.
+    /// that could not be processed in the previous call into segments, parses
+    /// the data in these segments and delivers the resulting
+    /// <see cref="powenetics_sample" />s to <paramref name="callback" />.
     /// </summary>
     /// <typeparam name="TCallback">The type of the callback functor to be
     /// invoked, which must accept a single <see cref="powenetics_sample" />
-    /// via which the information that have been parsed are returned.
+    /// in which the information that have been parsed are returned.
     /// </typeparam>
     /// <param name="data">The data to be parsed, which must be a
     /// non-<c>nullptr</c> pointer to <paramref name="cnt" /> bytes of data
     /// received from the device.</param>
     /// <param name="cnt">The size of <paramref name="data" /> in bytes.</param>
     /// <param name="callback">The callback to be invoked if a full segment
-    /// was found.</param>
+    /// was found. This must be a valid functor.</param>
     /// <returns><c>true</c> if data have been buffered until the next call,
     /// because the input could not be fully tokenised.</returns>
-    template<class TCallback> bool tokenise(
+    template<class TCallback> bool push_back(
         _In_reads_(cnt) const byte_type *data,
         _In_ const std::size_t cnt,
         _In_ TCallback&& callback);

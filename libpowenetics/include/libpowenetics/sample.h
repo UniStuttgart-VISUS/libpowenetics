@@ -19,7 +19,7 @@
 /// that we receive from the sensors. Callers can obtain tha apparent power by
 /// multiplying voltage and current.</para>
 /// </remarks>
-struct LIBPOWENETICS_API powenetics_voltage_current {
+typedef struct LIBPOWENETICS_API powenetics_voltage_current_t {
     /// <summary>
     /// The voltage reading in Volts.
     /// </summary>
@@ -29,14 +29,14 @@ struct LIBPOWENETICS_API powenetics_voltage_current {
     /// The current readings in Amperes.
     /// </summary>
     float current;
-};
+} powenetics_voltage_current;
 
 
 /// <summary>
 /// A voltage/current sample as produced by the Powenetics v2 power measurement
 /// device.
 /// </summary>
-struct LIBPOWENETICS_API powenetics_sample {
+typedef struct LIBPOWENETICS_API powenetics_sample_t {
 
     /// <summary>
     /// The version of the sample, which must be initialised when this
@@ -131,4 +131,4 @@ struct LIBPOWENETICS_API powenetics_sample {
     powenetics_voltage_current peg_3_3v;
 
     /* End of Powenetics v2, future versions must add fields below. */
-};
+} powenetics_sample;

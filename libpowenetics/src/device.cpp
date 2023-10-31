@@ -18,7 +18,7 @@
  * powenetics_device::powenetics_device
  */
 powenetics_device::powenetics_device(void) noexcept
-    : _handle(invalid_handle) { }
+    : _callback(nullptr), _context(nullptr), _handle(invalid_handle) { }
 
 
 /*
@@ -169,10 +169,30 @@ HRESULT powenetics_device::reset_calibration(void) noexcept {
 /*
  * powenetics_device::start_streaming
  */
-HRESULT powenetics_device::start_streaming(void) noexcept {
+HRESULT powenetics_device::start_streaming(
+        _In_ const powenetics_data_callback callback,
+        _In_opt_ void *context) noexcept {
     auto retval = (this->_handle != invalid_handle)
         ? S_OK
         : WS_E_INVALID_OPERATION;
+
+    if (SUCCEEDED(retval)) {
+        if (this->_thread.joinable()) {
+            _powenetics_debug("The Powenetics device is already streaming "
+                "data.\r\n");
+            retval = WS_E_INVALID_OPERATION;
+        }
+    }
+
+    if (SUCCEEDED(retval)) {
+        this->_callback = callback;
+        this->_context = context;
+
+        if (this->_callback == nullptr) {
+            _powenetics_debug("An invalid data callback has been passed.\n\n");
+            retval = E_POINTER;
+        }
+    }
 
     if (SUCCEEDED(retval)) {
         retval = this->write(commands_v2::calibration_ok);
@@ -202,9 +222,12 @@ void powenetics_device::read(void) {
             static_cast<DWORD>(buffer.size()),
             &read,
             nullptr)) {
-        //parser.
-
-
+        parser.push_back(buffer.data(), read,
+                [this](const powenetics_sample &sample) {
+            if (this->_callback != nullptr) {
+                this->_callback(this, &sample, this->_context);
+            }
+        });
     }
 }
 

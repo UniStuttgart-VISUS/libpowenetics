@@ -7,7 +7,7 @@
 #pragma once
 
 #include "libpowenetics/api.h"
-#include "libpowenetics/operation_mode.h"
+#include "libpowenetics/sample.h"
 #include "libpowenetics/serial.h"
 
 
@@ -72,9 +72,15 @@ HRESULT LIBPOWENETICS_API powenetics_reset_calibration(
 /// Puts the given Powenetics v2 power measurment device in streaming mode.
 /// </summary>
 /// <param name="handle">The handle for a Powenetics v2 device.</param>
+/// <param name="callback">The callback to be invoked if the device sent a new
+/// sample.</param>
+/// <param name="context">A user-defined pointer that will be passed to
+/// <paramref name="callback" /> along with each sample.</param>
 /// <returns></returns>
 HRESULT LIBPOWENETICS_API powenetics_start_streaming(
-    _In_ const powenetics_handle handle);
+    _In_ const powenetics_handle handle,
+    _In_ const powenetics_data_callback callback,
+    _In_opt_ void *context);
 
 #if defined(__cplusplus)
 } /* extern "C" */

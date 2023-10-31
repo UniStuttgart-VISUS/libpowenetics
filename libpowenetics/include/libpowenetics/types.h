@@ -70,3 +70,12 @@ struct powenetics_device;
 /// <c>nullptr</c> is used to represent an invalid handle.
 /// </remarks>
 typedef struct powenetics_device *powenetics_handle;
+
+
+struct powenetics_sample_t;
+
+/// <summary>
+/// The callback to be invoked when a new sample arrives.
+/// </summary>
+typedef void (*powenetics_data_callback)(_In_ powenetics_handle source,
+    _In_ const struct powenetics_sample_t *sample, _In_opt_ void *context);
