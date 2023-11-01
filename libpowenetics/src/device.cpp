@@ -167,7 +167,7 @@ HRESULT powenetics_device::open(
     }
 
 #else /* defined(_WIN32) */
-    this->_handle = open(com_port, O_RDWR);
+    this->_handle = ::open(com_port, O_RDWR);
     if (this->_handle == invalid_handle) {
         auto retval = static_cast<HRESULT>(-errno);
         _powenetics_debug("open on COM port failed.\r\n");
