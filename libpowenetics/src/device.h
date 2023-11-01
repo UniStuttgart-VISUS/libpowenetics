@@ -20,7 +20,6 @@
 #include "stream_state.h"
 
 
-
 /// <summary>
 /// This is the abstraction of the power measurement device which holds the
 /// handle of the serial port from which we receive our samples.

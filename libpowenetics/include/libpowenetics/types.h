@@ -33,6 +33,7 @@ typedef char powenetics_char;
 enum HRESULT {
     S_OK = 0,
     S_FALSE = 1,
+    E_INVALIDARG = -EINVAL
     E_NOTIMPL,
     E_POINTER,
     E_HANDLE,

@@ -183,7 +183,84 @@ HRESULT powenetics_device::open(
             return retval;
         }
 
-        throw "TODO";
+        // Baud rate
+        ::cfsetispeed(&tty, config->baud_rate);
+        ::cfsetospeed(&tty, config->baud_rate);
+
+        // Data bits: erase any existing value and set what we got as input.
+        tty.c_cflag &= ~CSIZE;
+        switch (config->data_bits) {
+            case 5:
+                tty.c_cflag |= CS5;
+                break;
+
+            case 6:
+                tty.c_cflag |= CS6;
+                break;
+
+            case 7:
+                tty.c_cflag |= CS7;
+                break;
+
+            case 8:
+                tty.c_cflag |= CS8;
+                break;
+
+            default:
+                _powenetics_debug("An invalid value for the data bits has been "
+                    "provided. Only values within [5, 8] are acceptable.\r\n");
+                return E_INVALIDARG;
+        }
+
+        // Parity:
+        switch (config->parity) {
+            powenetics_parity::none:
+            tty.c_cflag &= ~PARENB;
+            break;
+
+            default:
+                // TODO: might need adjustment.
+                tty.c_cflag |= PARENB;
+                break;
+        }
+
+        // Stop bits: Clearing the bits means one, setting them means two.
+        switch (config->stop_bits) {
+            case powenetics_stop_bits::one:
+                tty.c_cflag &= ~CSTOPB;
+                break;
+
+            case powenetics_stop_bits::two:
+                tty.c_cflag |= CSTOPB;
+                break;
+
+            default:
+                _powenetics_debug("An invalid value was passed for the number "
+                    "of stop bits. Only powenetics_stop_bits::one or
+                    "powenetics_stop_bits::two are acceptable.\r\n");
+                return E_INVALIDARG;
+        }
+
+        // Disable "canonical mode": In canonical mode, we only receive data if
+        // a new line character was received, which is not what we want for the
+        // byte stream from the deivce.
+        tty.c_lflag &= ~ICANON;
+
+        // Disable echoing of input.
+        tty.c_lflag &= ~ECHO;
+        tty.c_lflag &= ~ECHOE;
+        tty.c_lflag &= ~ECHONL;
+
+        // Disable interpretation of bytes that might be signal characters and
+        // any preprocessing of data before they are handed over to us. We want
+        //  everything we get to be interpreted as data.
+        tty.c_lflag &= ~ISIG;
+        tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR
+            | ICRNL);
+
+        // Same for the output: just send what we write.
+        tty.c_oflag &= ~(OPOST | ONLCR);
+
 
         if (::tcsetattr(this->_handle, TCSANOW, &tty) != 0) {
             auto retval = static_cast<HRESULT>(-errno);
@@ -412,6 +489,24 @@ HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
     return retval;
 
 #else /* defined(_WIN32) */
-    throw "TODO";
+    auto cur = data;
+    auto rem = cnt;
+
+    while (rem > 0) {
+        auto written = ::write(this->_handle, cur, sizeof(rem));
+
+        if (written < 0) {
+            auto retval = static_cast<HRESULT>(-errno);
+            _powenetics_debug("I/O error while sending a command to Powenetics "
+                "v2 device.\r\n");
+            return retval;
+        }
+
+        assert(written <= rem);
+        cur += written;
+        rem -= written;
+    }
+
+    return S_OK;
 #endif /* defined(_WIN32) */
 }
