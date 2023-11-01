@@ -66,51 +66,53 @@ jobs:
       pathToPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: '$(Build.Repository.Name)-vs19-$(Build.SourceVersion)'
 
-- job: VS2022
 
-  variables:
-    buildPlatform: 'x64'
-    buildConfiguration: 'Release'
-    generator: 'Visual Studio 17 2022'
+#- job: VS2022
+#
+#  variables:
+#    buildPlatform: 'x64'
+#    buildConfiguration: 'Release'
+#    generator: 'Visual Studio 17 2022'
+#
+#  pool:
+#    name: 'default'
+#    demands:
+#    - Agent.OS -equals Windows_NT
+#    - cmake
+#    - VisualStudio_17.0
+#
+#  steps:
+#  - task: CMake@1
+#    displayName: 'Configure'
+#    inputs:
+#      workingDirectory: '_build'
+#      cmakeArgs: '.. -G"$(generator)" -A"$(buildPlatform)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)" -DPOWENETICS_BuildTests="ON"'
+#
+#  - task: VSBuild@1
+#    displayName: 'Build'
+#    inputs:
+#      solution: '_build/*.sln'
+#      platform: '$(buildPlatform)'
+#      configuration: '$(buildConfiguration)'
+#
+#  - task: VSTest@2
+#    displayName: 'Tests'
+#    inputs:
+#      platform: '$(buildPlatform)'
+#      configuration: '$(buildConfiguration)'
+#
+#  - task: CMake@1
+#    displayName: 'Stage'
+#    inputs:
+#      workingDirectory: '_build'
+#      cmakeArgs: '--install .'
+#
+#  - task: PublishBuildArtifacts@1
+#    displayName: 'Publish artefact'
+#    inputs:
+#      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+#      artifactName: '$(Build.Repository.Name)-vs22-$(Build.SourceVersion)'
 
-  pool:
-    name: 'default'
-    demands:
-    - Agent.OS -equals Windows_NT
-    - cmake
-    - VisualStudio_17.0
-
-  steps:
-  - task: CMake@1
-    displayName: 'Configure'
-    inputs:
-      workingDirectory: '_build'
-      cmakeArgs: '.. -G"$(generator)" -A"$(buildPlatform)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)" -DPOWENETICS_BuildTests="ON"'
-
-  - task: VSBuild@1
-    displayName: 'Build'
-    inputs:
-      solution: '_build/*.sln'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-
-  - task: VSTest@2
-    displayName: 'Tests'
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-
-  - task: CMake@1
-    displayName: 'Stage'
-    inputs:
-      workingDirectory: '_build'
-      cmakeArgs: '--install .'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artefact'
-    inputs:
-      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: '$(Build.Repository.Name)-vs22-$(Build.SourceVersion)'
 
 - job: Linux
   variables:

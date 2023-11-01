@@ -236,7 +236,7 @@ HRESULT powenetics_device::open(
 
             default:
                 _powenetics_debug("An invalid value was passed for the number "
-                    "of stop bits. Only powenetics_stop_bits::one or
+                    "of stop bits. Only powenetics_stop_bits::one or "
                     "powenetics_stop_bits::two are acceptable.\r\n");
                 return E_INVALIDARG;
         }

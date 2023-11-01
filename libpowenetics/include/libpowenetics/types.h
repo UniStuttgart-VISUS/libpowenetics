@@ -48,7 +48,7 @@ typedef enum HRESULT_t {
     // -EPERM /* Not root* /,
     ERROR_FILE_NOT_FOUND = -ENOENT,
     // -ESRCH/* No such process			*/
-    ERROR_IO_PENDING = .-EINTR,
+    ERROR_IO_PENDING = -EINTR,
     // -EIO /* I/O error				*/
     // -ENXIO /* No such device or address		*/
     ERROR_FILE_TOO_LARGE = -E2BIG,
