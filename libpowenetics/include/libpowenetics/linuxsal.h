@@ -6,6 +6,10 @@
 
 #pragma once
 
+#if defined(_WIN32)
+#error "This header must not be included on Windows."
+#endif /* defined(_WIN32) */
+
 
 // Empty SAL annotations for rancid platforms.
 #define _Analysis_assume_(expr)
