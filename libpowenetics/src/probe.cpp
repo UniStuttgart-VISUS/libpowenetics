@@ -74,7 +74,7 @@ std::vector<powenetics_probe::string_type> powenetics_probe::candidates(void) {
 
     if (dir != nullptr) {
         while ((entry = ::readdir(dir)) != nullptr) {
-            string_type name(ent->d_name);
+            string_type name(entry->d_name);
 
             throw "TODO: regex the name";
         }
