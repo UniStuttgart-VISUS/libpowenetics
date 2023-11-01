@@ -110,6 +110,8 @@ excel_output& excel_output::visible(_In_ const bool visible) {
     invoke(nullptr, DISPATCH_PROPERTYPUT, this->_excel, L"Visible", input);
     return *this;
 }
+
+
 /*
  * excel_output::operator <<
  */
