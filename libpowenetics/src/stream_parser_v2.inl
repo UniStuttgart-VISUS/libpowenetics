@@ -13,6 +13,7 @@ bool stream_parser_v2::push_back(_In_reads_(cnt) const byte_type *data,
         _In_ const std::size_t cnt,
         _In_ TCallback&& callback) {
     assert(data != nullptr);
+    auto& delimiter = responses_v2::segment_delimiter;
     const auto end = data + cnt;
 
     if (this->_buffer.empty()) {

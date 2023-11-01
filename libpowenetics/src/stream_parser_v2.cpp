@@ -13,6 +13,8 @@
 _Ret_maybenull_ const stream_parser_v2::byte_type *
 stream_parser_v2::find_delimiter(_In_reads_(cnt) const byte_type *data,
         _In_ const std::size_t cnt) {
+    auto& delimiter = responses_v2::segment_delimiter;
+
     if ((data == nullptr) || (cnt < delimiter.size())) {
         // Trivial reject.
         _powenetics_debug("Invalid input provided to find_delimiter.\r\n");

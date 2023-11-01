@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <errno.h>
 #include <inttypes.h>
 #include <stddef.h>
 
@@ -30,8 +31,8 @@ typedef char powenetics_char;
 /// The type used to report the status of the API.
 /// </summary>
 enum HRESULT {
-    S_OK,
-    S_FALSE,
+    S_OK = 0,
+    S_FALSE = 1,
     E_NOTIMPL,
     E_POINTER,
     E_HANDLE,

@@ -69,7 +69,7 @@ HRESULT LIBPOWENETICS_API powenetics_reset_calibration(
     _In_ const powenetics_handle handle);
 
 /// <summary>
-/// Puts the given Powenetics v2 power measurment device in streaming mode.
+/// Puts the given Powenetics v2 power measurement device in streaming mode.
 /// </summary>
 /// <param name="handle">The handle for a Powenetics v2 device.</param>
 /// <param name="callback">The callback to be invoked if the device sent a new
@@ -81,6 +81,18 @@ HRESULT LIBPOWENETICS_API powenetics_start_streaming(
     _In_ const powenetics_handle handle,
     _In_ const powenetics_data_callback callback,
     _In_opt_ void *context);
+
+/// <summary>
+/// Returns the given Powenetics n2 power measurement to startup state.
+/// </summary>
+/// <remarks>
+/// This method blocks until the thread delivering the samples actually stopped
+/// and it is safe to invalidate any previously installed callback.
+/// </remarks>
+/// <param name="handle">The handle for a Powenetics v2 device.</param>
+/// <returns></returns>
+HRESULT LIBPOWENETICS_API powenetics_stop_streaming(
+    _In_ const powenetics_handle handle);
 
 #if defined(__cplusplus)
 } /* extern "C" */

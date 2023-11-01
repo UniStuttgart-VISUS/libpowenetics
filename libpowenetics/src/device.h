@@ -7,16 +7,17 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <cinttypes>
 #include <thread>
 #include <vector>
 
 #include "libpowenetics/api.h"
-#include "libpowenetics/operation_mode.h"
 #include "libpowenetics/sample.h"
 #include "libpowenetics/serial.h"
 
 #include "stream_parser_v2.h"
+#include "stream_state.h"
 
 
 
@@ -66,8 +67,13 @@ public:
     /// Start streaming data from the device and deliver it to the given
     /// <paramref name="callback" /> function.
     /// </summary>
-    HRESULT start_streaming(_In_ const powenetics_data_callback callback,
+    HRESULT start(_In_ const powenetics_data_callback callback,
         _In_opt_ void *context) noexcept;
+
+    /// <summary>
+    /// Asks the streaming thread to stop and waits for it exit.
+    /// </summary>
+    HRESULT stop(void) noexcept;
 
 private:
 
@@ -84,9 +90,25 @@ private:
 #endif /* defined(_WIN32) */
 
     /// <summary>
+    /// Checks that the streaming thread is stopped.
+    /// </summary>
+    HRESULT check_stopped(void) noexcept;
+
+    /// <summary>
+    /// Checks whether <see cref="_handle" /> is valid.
+    /// </summary>
+    HRESULT check_valid(void) noexcept;
+
+    /// <summary>
     /// The method executed in <see cref="_thread" /> to continuously read data
     /// from the serial port.
     /// </summary>
+    /// <remarks>
+    /// This thread continues reading data from <see cref="_handle" /> and
+    /// processes these until one of the following conditions is met: the
+    /// I/O failes due to <see cref="_handle" /> being closer, or the
+    /// <see cref="_state" /> is set to <see cref="stream_state::stopping" />.
+    /// </remarks>
     void read(void);
 
     /// <summary>
@@ -113,5 +135,6 @@ private:
     powenetics_data_callback _callback;
     void *_context;
     handle_type _handle;
+    std::atomic<stream_state> _state;
     std::thread _thread;
 };

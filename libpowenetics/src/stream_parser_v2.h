@@ -19,6 +19,7 @@
 
 #include "convert.h"
 #include "debug.h"
+#include "responses.h"
 
 
 /// <summary>
@@ -75,11 +76,6 @@ public:
         _In_ TCallback&& callback);
 
 private:
-
-    /// <summary>
-    /// The delimiter for segments in the data stream.
-    /// </summary>
-    static constexpr std::array<byte_type, 2> delimiter { 0xCA, 0xAC };
 
     /// <summary>
     /// The expected number of bytes in a valid segment.

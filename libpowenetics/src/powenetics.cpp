@@ -62,19 +62,21 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
         }
     }
 
-    *out_handle = new (std::nothrow) powenetics_device();
-    if (*out_handle == nullptr) {
+    std::unique_ptr<powenetics_device> device(
+        new (std::nothrow) powenetics_device());
+    if (device == nullptr) {
         _powenetics_debug("Insufficient memory for powenetics_device.\r\n");
         return E_OUTOFMEMORY;
     }
 
     auto conf = (config != nullptr) ? config : &dft_conf;
-    auto retval = (**out_handle).open(com_port, conf);
+    auto retval = device->open(com_port, conf);
     if (retval != S_OK) {
         _powenetics_debug("Failed to open powenetics_device.\r\n");
-        delete *out_handle;
-        *out_handle = nullptr;
     }
+
+    // If everything went OK so far, detach from unique_ptr.
+    *out_handle = device.release();
 
     return retval;
 }
@@ -98,5 +100,15 @@ HRESULT powenetics_start_streaming(_In_ const powenetics_handle handle,
         _In_opt_ void *context) {
     return (handle == nullptr)
         ? E_HANDLE
-        : handle->start_streaming(callback, context);
+        : handle->start(callback, context);
+}
+
+
+/*
+ * ::powenetics_stop_streaming
+ */
+HRESULT powenetics_stop_streaming(_In_ const powenetics_handle handle) {
+    return (handle == nullptr)
+        ? E_HANDLE
+        : handle->stop();
 }

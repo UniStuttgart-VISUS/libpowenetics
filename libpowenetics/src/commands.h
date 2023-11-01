@@ -42,12 +42,3 @@ namespace commands_v2 {
     };
 
 } /* namespace commands_v2 */
-
-
-    /*
-        public static class StatusCodes
-    {
-        public const string Calibration_Error = "FE-FE";
-        public const string Calibration_OK = "FC-FC";
-    }
-    */

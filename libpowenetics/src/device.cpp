@@ -7,6 +7,13 @@
 #include "device.h"
 
 #include <cassert>
+#include <string>
+
+#if !defined(_WIN32)
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+#endif /* !defined(_WIN32) */
 
 #include "commands.h"
 #include "debug.h"
@@ -18,7 +25,10 @@
  * powenetics_device::powenetics_device
  */
 powenetics_device::powenetics_device(void) noexcept
-    : _callback(nullptr), _context(nullptr), _handle(invalid_handle) { }
+    : _callback(nullptr),
+    _context(nullptr),
+    _handle(invalid_handle),
+    _state(stream_state::stopped) { }
 
 
 /*
@@ -26,6 +36,9 @@ powenetics_device::powenetics_device(void) noexcept
  */
 powenetics_device::~powenetics_device(void) noexcept {
     this->close();
+    // Note: closing the handle will cause the thread to exit with an I/O error,
+    // so we do not need to set the state here (it cannot be used anyway,
+    // because we are about to destroy the variable).
 
     if (this->_thread.joinable()) {
         _powenetics_debug("Waiting for serial reader thread to exit ...\r\n");
@@ -38,6 +51,13 @@ powenetics_device::~powenetics_device(void) noexcept {
  * powenetics_device::calibrate
  */
 HRESULT powenetics_device::calibrate(void) noexcept {
+    auto retval = this->check_valid();
+
+    // We should not calibrate while we are sampling.
+    if (SUCCEEDED(retval)) {
+        retval = this->check_stopped();
+    }
+
     //if (mode == 0) //Amps
     //{
     //    int calibration_channel = (int)m.Calibration_Channel.Value - 1;
@@ -89,7 +109,9 @@ HRESULT powenetics_device::close(void) noexcept {
         ? S_OK
         : HRESULT_FROM_WIN32(::GetLastError());
 #else /* defined(_WIN32) */
-    throw "TODO";
+    auto retval = (::close(this->_handle) == 0)
+        ? S_OK
+        : static_cast<HRESULT>(-errno);
 #endif /* defined(_WIN32) */
 
     this->_handle = invalid_handle;
@@ -145,7 +167,30 @@ HRESULT powenetics_device::open(
     }
 
 #else /* defined(_WIN32) */
-    throw "TODO";
+    this->_handle = open(com_port, O_RDWR);
+    if (this->_handle == invalid_handle) {
+        auto retval = static_cast<HRESULT>(-errno);
+        _powenetics_debug("open on COM port failed.\r\n");
+        return retval;
+    }
+
+    {
+        termios tty;
+
+        if (::tcgetattr(this->_handle, &tty) != 0) {
+            auto retval = static_cast<HRESULT>(-errno);
+            _powenetics_debug("Retrieving state of COM port failed.\r\n");
+            return retval;
+        }
+
+        throw "TODO";
+
+        if (::tcsetattr(this->_handle, TCSANOW, &tty) != 0) {
+            auto retval = static_cast<HRESULT>(-errno);
+            _powenetics_debug("Updating state of COM port failed.\r\n");
+            return retval;
+        }
+    }
 #endif /* defined(_WIN32) */
 
     return S_OK;
@@ -156,28 +201,35 @@ HRESULT powenetics_device::open(
  * powenetics_device::reset_calibration
  */
 HRESULT powenetics_device::reset_calibration(void) noexcept {
-    if (this->_handle != invalid_handle) {
-        _powenetics_debug("reset_calibration attempted on disconnected "
-            "powenetics_device.\r\n");
-        return WS_E_INVALID_OPERATION;
-    } else {
-        return this->write(commands_v2::clear_calibration);
+    auto retval = this->check_valid();
+
+    // We should not reset the calibration while we are sampling.
+    if (SUCCEEDED(retval)) {
+        retval = this->check_stopped();
     }
+
+    if (SUCCEEDED(retval)) {
+        retval = this->write(commands_v2::clear_calibration);
+    }
+
+    return retval;
 }
 
 
 /*
- * powenetics_device::start_streaming
+ * powenetics_device::start
  */
-HRESULT powenetics_device::start_streaming(
+HRESULT powenetics_device::start(
         _In_ const powenetics_data_callback callback,
         _In_opt_ void *context) noexcept {
-    auto retval = (this->_handle != invalid_handle)
-        ? S_OK
-        : WS_E_INVALID_OPERATION;
+    auto retval = this->check_valid();
 
     if (SUCCEEDED(retval)) {
-        if (this->_thread.joinable()) {
+        auto expected = stream_state::stopped;
+        auto succeeded = this->_state.compare_exchange_strong(expected,
+            stream_state::stopping, std::memory_order::memory_order_acq_rel);
+        assert(!this->_thread.joinable() || !succeeded);
+        if (!succeeded) {
             _powenetics_debug("The Powenetics device is already streaming "
                 "data.\r\n");
             retval = WS_E_INVALID_OPERATION;
@@ -207,17 +259,106 @@ HRESULT powenetics_device::start_streaming(
 
 
 /*
+ * powenetics_device::stop
+ */
+HRESULT powenetics_device::stop(void) noexcept {
+    auto retval = this->check_valid();
+
+    // Note: we do not check 'retval' here, because the sampler thread is not
+    // dependent on the handle and we want it to exit under any circumstance.
+    {
+        auto expected = stream_state::running;
+        auto succeeded = this->_state.compare_exchange_strong(expected,
+            stream_state::stopping, std::memory_order::memory_order_acq_rel);
+
+        // Return the error only if it does not mask a previous one.
+        if (SUCCEEDED(retval) && !succeeded) {
+            _powenetics_debug("An attempt to stop streaming data was made on a "
+                "device that was not streaming data in the first place.\n\n");
+            retval = WS_E_INVALID_OPERATION;
+        }
+    }
+
+    // If the handle is valid, put the device back in bootload mode. Note that
+    // it is important to do that *after* requesting the thread to exit, because
+    // if the thread does not receive any data from the device, the I/O will
+    // block and the only way to exit is closing the handle.
+    if (SUCCEEDED(retval)) {
+        retval = this->write(commands_v2::bootload_mode);
+    }
+
+    // Our contract states that the sampler thread must not run anymore once the
+    // methods exits, so we wait for the thread to exit.
+    if (this->_thread.joinable()) {
+        this->_thread.join();
+    }
+
+    return retval;
+}
+
+
+/*
+ * powenetics_device::check_stopped
+ */
+HRESULT powenetics_device::check_stopped(void) noexcept {
+    const auto s = this->_state.load(std::memory_order::memory_order_acquire);
+    const auto succeeded = (s == stream_state::stopped);
+
+    if (!succeeded) {
+        _powenetics_debug("The Powenetics v2 sampler thread is either running "
+            "or in a transitional state.\r\n");
+    }
+
+    return succeeded ? S_OK : WS_E_INVALID_OPERATION;
+}
+
+
+/*
+ * powenetics_device::check_valid
+ */
+HRESULT powenetics_device::check_valid(void) noexcept {
+    const auto succeeded = (this->_handle != invalid_handle);
+
+    if (!succeeded) {
+        _powenetics_debug("The connection to the Powenetics v2 device has not "
+            "been established.\r\n");
+    }
+
+    return succeeded ? S_OK : WS_E_INVALID_OPERATION;
+}
+
+
+/*
  * powenetics_device::read
  */
 void powenetics_device::read(void) {
     set_thread_name("powenetics sampler");
 
+    // Signal to everyone that we are now running. If this fails (with a strong
+    // CAS), someone else has manipulated the '_state' variable in the meantime.
+    // This is illegal. No one may change the state during startup except for
+    // the sampler thread itself at this very point.
+    {
+        auto expected = stream_state::starting;
+        if (!this->_state.compare_exchange_strong(expected,
+                stream_state::running,
+                std::memory_order::memory_order_acq_rel)) {
+            _powenetics_debug("The state of the Powenetics v2 sampler thread "
+                "was manipulated during startup.\r\n");
+            std::abort();
+        }
+    }
+
     std::vector<byte_type> buffer;
     buffer.resize(4 * 1024);
     stream_parser_v2 parser;
+
+#if defined(_WIN32)
     DWORD read;
 
-    while (::ReadFile(this->_handle,
+    while ((this->_state.load(std::memory_order::memory_order_acquire)
+            == stream_state::running)
+            && ::ReadFile(this->_handle,
             buffer.data(),
             static_cast<DWORD>(buffer.size()),
             &read,
@@ -229,6 +370,17 @@ void powenetics_device::read(void) {
             }
         });
     }
+#else /* defined(_WIN32) */
+    throw "TODO";
+#endif /* defined(_WIN32) */
+
+    // Indicate that we are done. We do not CAS this from
+    // stream_state::stopping, because a request for orderly shutdown is only
+    // one way we can get here, the file handle being closed and the I/O failing
+    // being the other one. In the latter case, the state will still be
+    // stream_state::running at this point.
+    this->_state.store(stream_state::stopped,
+        std::memory_order::memory_order_release);
 }
 
 
@@ -255,8 +407,8 @@ HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
     }
 
     auto retval = HRESULT_FROM_WIN32(::GetLastError());
-    _powenetics_debug("I/O error while sending a command to the "
-        "Powenetics device.\r\n");
+    _powenetics_debug("I/O error while sending a command to Powenetics "
+        "v2 device.\r\n");
     return retval;
 
 #else /* defined(_WIN32) */
