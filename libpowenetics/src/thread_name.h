@@ -9,6 +9,8 @@
 #include <Windows.h>
 #else /* defined(_WIN32) */
 #include <pthread.h>
+
+#include "libpowenetics/linuxsal.h"
 #endif /* defined(_WIN32) */
 
 
