@@ -157,9 +157,9 @@ typedef enum HRESULT_t {
 /// <summary>
 /// Answer whether <paramref name="hr" /> indicates failure.
 /// </summary>
-#define FAILED(hr) (static_cast<int>(hr) < 0)
+#define FAILED(hr) ((int) (hr) < 0)
 
 /// <summary>
 /// Answer whether <paramref name="hr" /> indicates success.
 /// </summary>
-#define SUCCEEDED(hr) (static_cast<int>(hr) >= 0)
+#define SUCCEEDED(hr) ((int) (hr) >= 0)
