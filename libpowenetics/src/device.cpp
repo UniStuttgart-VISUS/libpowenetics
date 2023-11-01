@@ -131,7 +131,7 @@ HRESULT powenetics_device::open(
     if (this->_handle != invalid_handle) {
         _powenetics_debug("Tried opening a powenetics_device that is already "
             "connected...\r\n");
-        return WS_E_INVALID_OPERATION;
+        return E_NOT_VALID_STATE;
     }
 
 #if defined(_WIN32)
@@ -309,7 +309,7 @@ HRESULT powenetics_device::start(
         if (!succeeded) {
             _powenetics_debug("The Powenetics device is already streaming "
                 "data.\r\n");
-            retval = WS_E_INVALID_OPERATION;
+            retval = E_NOT_VALID_STATE;
         }
     }
 
@@ -352,7 +352,7 @@ HRESULT powenetics_device::stop(void) noexcept {
         if (SUCCEEDED(retval) && !succeeded) {
             _powenetics_debug("An attempt to stop streaming data was made on a "
                 "device that was not streaming data in the first place.\n\n");
-            retval = WS_E_INVALID_OPERATION;
+            retval = E_NOT_VALID_STATE;
         }
     }
 
@@ -386,7 +386,7 @@ HRESULT powenetics_device::check_stopped(void) noexcept {
             "or in a transitional state.\r\n");
     }
 
-    return succeeded ? S_OK : WS_E_INVALID_OPERATION;
+    return succeeded ? S_OK : E_NOT_VALID_STATE;
 }
 
 
@@ -401,7 +401,7 @@ HRESULT powenetics_device::check_valid(void) noexcept {
             "been established.\r\n");
     }
 
-    return succeeded ? S_OK : WS_E_INVALID_OPERATION;
+    return succeeded ? S_OK : E_NOT_VALID_STATE;
 }
 
 
@@ -433,9 +433,7 @@ void powenetics_device::read(void) {
 #if defined(_WIN32)
     DWORD read;
 
-    while ((this->_state.load(std::memory_order::memory_order_acquire)
-            == stream_state::running)
-            && ::ReadFile(this->_handle,
+    while (this->check_running() && ::ReadFile(this->_handle,
             buffer.data(),
             static_cast<DWORD>(buffer.size()),
             &read,
@@ -447,8 +445,21 @@ void powenetics_device::read(void) {
             }
         });
     }
+
 #else /* defined(_WIN32) */
-    throw "TODO";
+    while (this->check_running()) {
+        const auto read = ::read(this->_handle, buffer.data(), buffer.size());
+        if (read > 0) {
+            parser.push_back(buffer.data(), read,
+                [this](const powenetics_sample &sample) {
+                if (this->_callback != nullptr) {
+                    this->_callback(this, &sample, this->_context);
+                }
+            });
+        } else if (errno != 0) {
+            break;
+        }
+    }
 #endif /* defined(_WIN32) */
 
     // Indicate that we are done. We do not CAS this from

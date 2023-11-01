@@ -22,7 +22,7 @@ extern "C" {
 /// <param name="mode"></param>
 /// <returns><c>S_OK</c> in case of success,
 /// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid,
-/// <c>WS_E_INVALID_OPERATION</c> if the object provided is not in an
+/// <c>E_NOT_VALID_STATE</c> if the object provided is not in an
 /// acceptable state to perform the operation, namely if the serial
 /// connection is not open,
 /// any platform-specific I/O error if writing to or reading from the
@@ -48,7 +48,7 @@ HRESULT LIBPOWENETICS_API powenetics_close(_In_ const powenetics_handle handle);
 /// <returns><c>S_OK</c> in case of success,
 /// <c>E_INVALIDARG</c> if either <paramref name="out_handle "/> or
 /// <paramref name="com_port" /> is <c>nullptr</c>,
-/// <c>WS_E_INVALID_OPERATION</c> if the device has already been opened
+/// <c>E_NOT_VALID_STATE</c> if the device has already been opened
 /// before, a platform-specific error code if accessing the selected
 /// serial port failed.</returns>
 HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
@@ -61,7 +61,7 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
 /// <param name="handle">The handle for a Powenetics v2 device.</param>
 /// <returns><c>S_OK</c> in case of success,
 /// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid,
-/// <c>WS_E_INVALID_OPERATION</c> if the device is not in a valid state to
+/// <c>E_NOT_VALID_STATE</c> if the device is not in a valid state to
 /// perform the operation,
 /// a platform-dependent error code if the underlying I/O failed.</returns>
 /// </returns>
