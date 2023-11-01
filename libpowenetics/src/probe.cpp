@@ -14,35 +14,6 @@
 #endif /* defined(_WIN32) */
 
 
-#if defined(_WIN32)
-/// <summary>
-/// Gets the value of the specified device property.
-/// </summary>
-static std::vector<std::uint8_t> get_property(_In_ HDEVINFO dev_info,
-        _In_ const SP_DEVINFO_DATA& dev_data,
-        _In_ const DWORD property) {
-    auto data = const_cast<PSP_DEVINFO_DATA>(&dev_data);
-    std::vector<std::uint8_t> retval;
-    DWORD size = 0;
-    DWORD type = 0;
-
-    // Measure the required buffer size.
-    ::SetupDiGetDeviceRegistryPropertyW(dev_info, data, property, &type,
-        nullptr, 0, &size);
-
-    retval.resize(size);
-
-    // Get the data.
-    if (!::SetupDiGetDeviceRegistryPropertyW(dev_info, data, property, &type,
-            retval.data(), static_cast<DWORD>(retval.size()), &size)) {
-        throw std::system_error(::GetLastError(), std::system_category());
-    }
-
-    return retval;
-}
-#endif /* defined(_WIN32) */
-
-
 /*
  * powenetics_probe::candidates
  */
@@ -55,28 +26,41 @@ std::vector<powenetics_probe::string_type> powenetics_probe::candidates(void) {
     // instead.
 
     // Create a HDEVINFO with all ports that are present.
-    static const GUID ports_class = { 0x4D36E978, 0xE325, 0x11CE,
-        { 0xBF, 0xC1, 0x08, 0x00, 0x2B, 0xE1, 0x03, 0x18 } };
-    auto dev_info = ::SetupDiGetClassDevsW(&ports_class, nullptr, NULL,
+    auto dev_info = ::SetupDiGetClassDevsW(&GUID_CLASS_COMPORT, nullptr, NULL,
         DIGCF_PRESENT);
 
-    // Enumerate through all devices in the set.
-    SP_DEVINFO_DATA dev_data;
-    ::ZeroMemory(&dev_data, sizeof(dev_data));
-    dev_data.cbSize = sizeof(SP_DEVINFO_DATA);
+    // Enumerate the interface details, which provide us with the path to the
+    // device that we can open using CreateFile.
+    SP_DEVICE_INTERFACE_DATA if_data;
+    ::ZeroMemory(&if_data, sizeof(if_data));
+    if_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-
-    for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, i, &dev_data); ++i) {
+    for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, nullptr,
+            &GUID_DEVINTERFACE_COMPORT, i, &if_data); ++i) {
         DWORD size = 0;
-        DWORD type = 0;
+        ::SetupDiGetDeviceInterfaceDetailW(dev_info,
+            &if_data,
+            nullptr,
+            0,
+            &size,
+            nullptr);
 
-        auto path = ::get_property(dev_info, dev_data, SPDRP_PHYSICAL_DEVICE_OBJECT_NAME);
-//        auto name = ::get_property(dev_info, dev_data, SPDRP_FRIENDLYNAME);
-    }
+        if (size > 0) {
+            std::vector<std::uint8_t> data(size);
+            auto detail = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(
+                data.data());
+            detail->cbSize = static_cast<DWORD>(data.size());
 
-    if (dev_info != INVALID_HANDLE_VALUE) {
-        ::SetupDiDestroyDeviceInfoList(dev_info);
-    }
+            if (::SetupDiGetDeviceInterfaceDetail(dev_info,
+                    &if_data,
+                    detail,
+                    size,
+                    &size,
+                    nullptr)) {
+                retval.emplace_back(detail->DevicePath);
+            }
+        }
+    } /* for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, ... */
 #else /* defined(_WIN32) */
     throw "TODO";
 #endif /* defined(_WIN32) */
