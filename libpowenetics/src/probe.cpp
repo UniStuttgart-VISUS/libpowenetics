@@ -6,11 +6,16 @@
 
 #include "probe.h"
 
+#include <regex>
 #include <system_error>
 
 #if defined(_WIN32)
 #include <SetupAPI.h>
 #include <Windows.h>
+#else /* defined(_WIN32) */
+#include <dirent.h>
+
+#include <sys/types.h>
 #endif /* defined(_WIN32) */
 
 
@@ -61,8 +66,21 @@ std::vector<powenetics_probe::string_type> powenetics_probe::candidates(void) {
             }
         }
     } /* for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, ... */
+
 #else /* defined(_WIN32) */
-    throw "TODO";
+    // On Linux, we need to enumerate all tty devices.
+    auto dir = ::opendir("/dev");
+    dirent *entry;
+
+    if (dir != nullptr) {
+        while ((entry = ::readdir(dir)) != nullptr) {
+            string_type name(ent->d_name);
+
+            throw "TODO: regex the name";
+        }
+
+        ::closedir(dir);
+    }
 #endif /* defined(_WIN32) */
 
     return retval;
