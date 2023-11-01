@@ -27,3 +27,8 @@
 #else /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */
 #define LIBPOWENETICS_TEST_API
 #endif /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */
+
+
+#if !defined(_WIN32)
+#include "libpowenetics/linuxsal.h"
+#endif /* !defined(_WIN32) */
