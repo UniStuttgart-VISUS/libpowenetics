@@ -214,7 +214,7 @@ HRESULT powenetics_device::open(
 
         // Parity:
         switch (config->parity) {
-            powenetics_parity::none:
+            case powenetics_parity::none:
             tty.c_cflag &= ~PARENB;
             break;
 
