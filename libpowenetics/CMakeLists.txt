@@ -33,6 +33,10 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
         $<BUILD_INTERFACE:${SourceDirectory}>)
 
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} SetupAPI)
+endif ()
+
 
 # Provide the internal API to the unit tests.
 set(LibpoweneticsTestInclude "${CMAKE_CURRENT_SOURCE_DIR}/src" PARENT_SCOPE)

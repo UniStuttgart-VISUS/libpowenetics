@@ -7,14 +7,17 @@
 
 #include <algorithm>
 
-#include <convert.h>
-
+#include "convert.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
 namespace functions {
 
+    /// <summary>
+    /// Test the data conversion functions that interpret the byte stream from
+    /// the device.
+    /// </summary>
     TEST_CLASS(convert) {
 
         TEST_METHOD(to_uint16) {

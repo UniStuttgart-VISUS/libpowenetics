@@ -92,7 +92,7 @@ private:
     /// Check whether the thread is still in
     ///  <see cref="stream_state::running" />.
     /// </summary>
-    bool check_running(void) noexcept {
+    inline bool check_running(void) noexcept {
         auto state = this->_state.load(std::memory_order::memory_order_acquire);
         return (state == stream_state::running);
     }

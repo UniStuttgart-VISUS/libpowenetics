@@ -7,14 +7,16 @@
 
 #include <algorithm>
 
-#include <libpowenetics/serial.h>
-
+#include "libpowenetics/serial.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
 namespace functions {
 
+    /// <summary>
+    /// Test the utility functions for serial ports.
+    /// </summary>
     TEST_CLASS(serial) {
 
         TEST_METHOD(create_default_config) {
@@ -35,7 +37,6 @@ namespace functions {
                 Assert::AreEqual(int(powenetics_parity::none), int(config.parity), L"data_bits set", LINE_INFO());
                 Assert::AreEqual(int(powenetics_stop_bits::one), int(config.stop_bits), L"stop_bits set", LINE_INFO());
             }
-
         }
 
     };

@@ -7,14 +7,16 @@
 
 #include <algorithm>
 
-#include <libpowenetics/timestamp.h>
-
+#include "libpowenetics/timestamp.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
 namespace functions {
 
+    /// <summary>
+    /// Test the utility functions for creating timestamps.
+    /// </summary>
     TEST_CLASS(timestamp) {
 
         TEST_METHOD(create_from_stl) {

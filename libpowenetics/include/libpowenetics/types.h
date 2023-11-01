@@ -27,6 +27,10 @@ typedef char powenetics_char;
 
 
 #if !defined(_WIN32)
+// Declare a custom error code. Note that facility 4 is FACILITY_ITF on Windows,
+// which stands for user-defined codes.
+#define _POWENETICS_ERROR_CODE(hr) (hr | ((4 << 16) | 0x80000000))
+
 /// <summary>
 /// The type used to report the status of the API.
 /// </summary>
@@ -161,9 +165,11 @@ typedef enum HRESULT_t {
     //-ESTALE		151	/* Stale NFS file handle */
 
     // Error codes we need, but cannot map.
-    E_NOTIMPL = 0xC0000001,
-    E_NOT_VALID_STATE = 0xC0000002,
-} HRESULT;
+    E_NOTIMPL = _POWENETICS_ERROR_CODE(1),
+    E_NOT_VALID_STATE = _POWENETICS_ERROR_CODE(2),
+} HRESULT
+
+#undef _POWENETICS_ERROR_CODE
 
 #define FAILED(hr) (static_cast<int>(hr) < 0)
 #define SUCCEEDED(hr) (static_cast<int>(hr) >= 0)
