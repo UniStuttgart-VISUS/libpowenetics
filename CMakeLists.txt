@@ -5,9 +5,13 @@
 cmake_minimum_required(VERSION 3.18.0)
 project(powenetics)
 
+include(CMakeDependentOption)
+
 
 # User-configurable options
 option(POWENETICS_BuildTests "Build the test driver" OFF)
+option(POWENETICS_BuildCclient "Build the C-style test client" ON)
+cmake_dependent_option(POWENETICS_BuildExcellentPowenetics "Build the excellent demo programme" ON WIN32 OFF)
 
 
 #  Global compiler options, which are derived from the settings above.
@@ -38,4 +42,12 @@ endif ()
 
 
 # Build the test for the C API.
-add_subdirectory(cclient)
+if (POWENETICS_BuildCclient)
+    add_subdirectory(cclient)
+endif()
+
+
+# Build the demo programme writing to Excel.
+if (POWENETICS_BuildExcellentPowenetics)
+    add_subdirectory(excellentpowenetics)
+endif ()
