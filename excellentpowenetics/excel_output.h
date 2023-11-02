@@ -32,6 +32,8 @@ public:
 
     excel_output(const excel_output&) = delete;
 
+    excel_output(excel_output&&) = default;
+
     /// <summary>
     /// Finalises the instance by closing Excel.
     /// </summary>
@@ -61,6 +63,8 @@ public:
     excel_output& visible(_In_ const bool visible);
 
     excel_output& operator =(const excel_output&) = delete;
+
+    excel_output& operator =(excel_output&&) = default;
 
     /// <summary>
     /// Write the given sample into the Excel sheet.
