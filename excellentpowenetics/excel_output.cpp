@@ -128,41 +128,41 @@ excel_output& excel_output::operator <<(_In_ const powenetics_sample& rhs) {
         this->write_value(L"Timestamp", row, col++);
         this->write_value(L"Sequence Number", row, col++);
 
-        this->write_value(L"ATX 12V (V)", row, col++);
-        this->write_value(L"ATX 12V (A)", row, col++);
+        this->write_value(L"ATX 12V (U)", row, col++);
+        this->write_value(L"ATX 12V (I)", row, col++);
 
-        this->write_value(L"ATX 3.3V (V)", row, col++);
-        this->write_value(L"ATX 3.3V (A)", row, col++);
+        this->write_value(L"ATX 3.3V (U)", row, col++);
+        this->write_value(L"ATX 3.3V (I)", row, col++);
 
-        this->write_value(L"ATX 5V (V)", row, col++);
-        this->write_value(L"ATX 5V (A)", row, col++);
+        this->write_value(L"ATX 5V (U)", row, col++);
+        this->write_value(L"ATX 5V (I)", row, col++);
 
-        this->write_value(L"ATX STB (V)", row, col++);
-        this->write_value(L"ATX STB (A)", row, col++);
+        this->write_value(L"ATX STB (U)", row, col++);
+        this->write_value(L"ATX STB (I)", row, col++);
 
-        this->write_value(L"EPS #1 (V)", row, col++);
-        this->write_value(L"EPS #1 (A)", row, col++);
+        this->write_value(L"EPS #1 (U)", row, col++);
+        this->write_value(L"EPS #1 (I)", row, col++);
 
-        this->write_value(L"EPS #2 (V)", row, col++);
-        this->write_value(L"EPS #2 (A)", row, col++);
+        this->write_value(L"EPS #2 (U)", row, col++);
+        this->write_value(L"EPS #2 (I)", row, col++);
 
-        this->write_value(L"EPS #3 (V)", row, col++);
-        this->write_value(L"EPS #3 (A)", row, col++);
+        this->write_value(L"EPS #3 (U)", row, col++);
+        this->write_value(L"EPS #3 (I)", row, col++);
 
-        this->write_value(L"PCIe 12V #1 (V)", row, col++);
-        this->write_value(L"PCIe 12V #1 (A)", row, col++);
+        this->write_value(L"PCIe 12V #1 (U)", row, col++);
+        this->write_value(L"PCIe 12V #1 (I)", row, col++);
 
-        this->write_value(L"PCIe 12V #2 (V)", row, col++);
-        this->write_value(L"PCIe 12V #2 (A)", row, col++);
+        this->write_value(L"PCIe 12V #2 (U)", row, col++);
+        this->write_value(L"PCIe 12V #2 (I)", row, col++);
 
-        this->write_value(L"PCIe 12V #3 (V)", row, col++);
-        this->write_value(L"PCIe 12V #3 (A)", row, col++);
+        this->write_value(L"PCIe 12V #3 (U)", row, col++);
+        this->write_value(L"PCIe 12V #3 (I)", row, col++);
 
-        this->write_value(L"PEG 12V (V)", row, col++);
-        this->write_value(L"PEG 12V (A)", row, col++);
+        this->write_value(L"PEG 12V (U)", row, col++);
+        this->write_value(L"PEG 12V (I)", row, col++);
 
-        this->write_value(L"PEG 3.3V (V)", row, col++);
-        this->write_value(L"PEG 3.3V (A)", row, col++);
+        this->write_value(L"PEG 3.3V (U)", row, col++);
+        this->write_value(L"PEG 3.3V (I)", row, col++);
 
         ++row;
         col = 0;

@@ -82,6 +82,12 @@ void excel_worker::worker(void) {
     while (running) {
         this->_event.wait();
 
+        // Swap the buffer the device is writing to and the one we are reading
+        // from in a critical section as small as possible. After swapping the
+        // buffers, make sure that the capacity of the one we are writing to is
+        // at least the capacity of the one we just received, this minimising
+        // costly reallocations in the sampler thread that receives new data
+        // every millisecond.
         {
             std::unique_lock<decltype(this->_lock)> l(this->_lock);
             running = !this->_samples.empty();
@@ -89,10 +95,13 @@ void excel_worker::worker(void) {
             this->_samples.reserve(samples.capacity());
         }
 
+        // Write all the samples into the excel sheet.
         for (auto& s : samples) {
             this->_output << s;
         }
 
+        // Clear the local buffer such that it is not filled when we swap
+        // the next time we wake.
         samples.clear();
     }
 }

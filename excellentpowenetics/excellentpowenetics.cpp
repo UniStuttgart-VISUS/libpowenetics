@@ -14,6 +14,7 @@
 
 #include "cmd_line.h"
 #include "excel_output.h"
+#include "excel_worker.h"
 
 
 /// <summary>
@@ -35,7 +36,7 @@ int wmain(_In_ const int argc, _In_reads_(argc) const wchar_t **argv) {
         excel_output excel;
         excel.visible(cmd_line.excel_visible());
 
-        powenetics_sample s;
+        powenetics_sample s { 0 };
         excel << s;
 
 

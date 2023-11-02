@@ -44,9 +44,11 @@ private:
     /// configured Excel sheet. Note that a pointer to the
     /// <see cref="excel_worker" /> must be passed as the context.
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="sample"></param>
-    /// <param name="context"></param>
+    /// <param name="source">The handle to the device we receive the
+    /// data from.</param>
+    /// <param name="sample">The sample that the device has just produced.
+    /// </param>
+    /// <param name="context">A pointer to this worker object.</param>
     static void callback(_In_ powenetics_handle source,
         _In_ const struct powenetics_sample_t *sample,
         _In_opt_ void *context);
