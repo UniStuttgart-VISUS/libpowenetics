@@ -4,7 +4,9 @@
 // <author>Christoph Müller</author>
 
 #include <iostream>
+#include <thread>
 
+#include <conio.h>
 #include <Windows.h>
 #include <tchar.h>
 
@@ -29,17 +31,34 @@
 /// <param name="argv">The list of command line arguments.</param>
 /// <returns>Zero, unconditionally.</returns>
 int wmain(_In_ const int argc, _In_reads_(argc) const wchar_t **argv) {
+    typedef wil::unique_any<powenetics_handle, decltype(::powenetics_close),
+        &::powenetics_close> unique_powenetics;
+
     try {
         cmd_line cmd_line(argc, argv);
-        auto com_scope = wil::CoInitializeEx();
+        auto com_scope = wil::CoInitializeEx(COINIT_MULTITHREADED);
 
-        excel_output excel;
-        excel.visible(cmd_line.excel_visible());
+        // Configure the Excel output.
+        excel_output output;
+        output.visible(cmd_line.excel_visible());
 
-        powenetics_sample s { 0 };
-        excel << s;
+        // Open the Powenetics device.
+        unique_powenetics powenetics;
+        THROW_IF_FAILED(::powenetics_open(powenetics.put(), L"", nullptr));
 
+        // Start the worker and wait for the user to end measurement.
+        excel_worker worker(powenetics.release(), output);
+        std::cout << "Press any key to end measurement." << std::endl;
+        ::getch();
+        worker.stop();
 
+        // If the user provided an output path, save the Excel workbook and
+        // close Excel. Otherwise, we leave it running and let the user decide
+        // what to do.
+        if (!cmd_line.output_path().empty()) {
+            output.save(cmd_line.output_path());
+            output.close();
+        }
 
         return 0;
 

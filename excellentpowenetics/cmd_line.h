@@ -27,6 +27,12 @@ public:
     /// <summary>
     /// Answer whether the Excel window should be visible.
     /// </summary>
+    /// <remarks>
+    /// The Excel window is visible if it has been explicitly requested or if
+    /// there is no output path to save it. In the latter case, we want to leave
+    /// Excel open so that the user can decide what to do with the data
+    /// recorded.
+    /// </remarks>
     /// <returns></returns>
     inline bool excel_visible(void) const noexcept {
         return (this->_excel_visible || this->_output_path.empty());

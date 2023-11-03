@@ -12,11 +12,29 @@
  * excel_worker::excel_worker
  */
 excel_worker::excel_worker(_Inout_ powenetics_handle&& input,
-        _Inout_ excel_output&& output)
+        _Inout_ excel_output& output)
     : _event(::CreateEvent(nullptr, FALSE, FALSE, nullptr)),
         _input(input),
-        _output(std::move(output)) {
+        _output(output) {
     input = nullptr;
+    this->start();
+}
+
+
+/*
+ * excel_worker::~excel_worker
+ */
+excel_worker::~excel_worker(void) noexcept {
+    this->stop();
+    ::powenetics_close(this->_input);
+}
+
+
+/*
+ * excel_worker::start
+ */
+void excel_worker::start(void) {
+    assert(this->_input != nullptr);
 
     // Start streaming data from the given Powenetics device.
     {
@@ -25,20 +43,19 @@ excel_worker::excel_worker(_Inout_ powenetics_handle&& input,
         THROW_IF_FAILED(hr);
     }
 
-    // Start the thread writing all the stuff to Excel.
+    // Start the thread writing all the stuff to Excel. Note that we must not
+    // start the thread if we were unable to start streaming.
     this->_thread = std::thread(&excel_worker::worker, this);
-
 }
 
 
 /*
- * excel_worker::~excel_worker
+ * excel_worker::stop
  */
-excel_worker::~excel_worker(void) noexcept {
+void excel_worker::stop(void) {
     // Stop the Powenetics device creating samples. This must be done first such
     // that the queue remains empty after what we do next.
     ::powenetics_stop_streaming(this->_input);
-    ::powenetics_close(this->_input);
 
     // Clear the queue and wake the worker thread. This is the signal for the
     // worker thread to exit. In all other cases, we wake it only when the queue
@@ -76,6 +93,7 @@ void excel_worker::callback(_In_ powenetics_handle source,
  * excel_worker::worker
  */
 void excel_worker::worker(void) {
+    auto com_scope = wil::CoInitializeEx(COINIT_MULTITHREADED);
     auto running = true;
     std::vector<powenetics_sample> samples;
 
