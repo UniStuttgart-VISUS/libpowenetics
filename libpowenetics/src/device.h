@@ -29,9 +29,26 @@ struct LIBPOWENETICS_TEST_API powenetics_device final {
 public:
 
     /// <summary>
+    /// The type used to pass around devices from probing.
+    /// </summary>
+    typedef std::unique_ptr<powenetics_device> device_type;
+
+    /// <summary>
     /// The type used to represent a single byte.
     /// </summary>
     typedef stream_parser_v2::byte_type byte_type;
+
+    /// <summary>
+    /// The type of a string.
+    /// </summary>
+    typedef std::basic_string<powenetics_char> string_type;
+
+    /// <summary>
+    /// Gets the paths of all COM ports on the system that might be used to
+    /// connect a Powenetics device.
+    /// </summary>
+    /// <returns>The paths of all COM ports on the system.</returns>
+    static std::vector<string_type> probe_candidates(void);
 
     /// <summary>
     /// Initialises a new instance.

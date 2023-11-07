@@ -56,6 +56,17 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
     _In_opt_ const powenetics_serial_configuration *config);
 
 /// <summary>
+/// Opens at most <paramref name="cnt" /> Powenetics v2 power measurement
+/// devices connected to the local machine.
+/// </summary>
+/// <param name="out_handles"></param>
+/// <param name="cnt"></param>
+/// <returns></returns>
+HRESULT LIBPOWENETICS_API powenetics_probe(
+    _Out_writes_opt_(*cnt) powenetics_handle *out_handles,
+    _Inout_ size_t *cnt);
+
+/// <summary>
 /// Resets the calibration of the device identified by the given handle.
 /// </summary>
 /// <param name="handle">The handle for a Powenetics v2 device.</param>

@@ -46,7 +46,13 @@ int _tmain(int argc, _TCHAR **argv) {
 
     // Initialisation phase.
     if (SUCCEEDED(hr)) {
-        hr = powenetics_open(&handle, argv[1], NULL);
+        if (argc < 2) {
+            size_t cnt = 0;
+            hr = powenetics_probe(NULL, &cnt);
+
+        } else {
+            hr = powenetics_open(&handle, argv[1], NULL);
+        }
     }
 
     if (SUCCEEDED(hr)) {

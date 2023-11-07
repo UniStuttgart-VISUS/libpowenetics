@@ -6,11 +6,13 @@
 
 #include "libpowenetics/powenetics.h"
 
+#include <algorithm>
 #include <cassert>
 #include <memory>
 
 #include "debug.h"
 #include "device.h"
+#include "thread_name.h"
 
 
 /*
@@ -77,6 +79,90 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
 
     // If everything went OK so far, detach from unique_ptr.
     *out_handle = device.release();
+
+    return retval;
+}
+
+
+/*
+ * ::powenetics_probe
+ */
+HRESULT LIBPOWENETICS_API powenetics_probe(
+        _Out_writes_opt_(*cnt) powenetics_handle *out_handles,
+        _Inout_ size_t *cnt) {
+    if (cnt == nullptr) {
+        _powenetics_debug("A valid number of handles must be provided.\r\n");
+        return E_POINTER;
+    }
+
+    // Get all serial ports as candidates where a device could be attached to.
+    auto candidates = powenetics_device::probe_candidates();
+
+    // Check all serial ports by asynchronously opening a device on it.
+    if (!candidates.empty()) {
+        powenetics_serial_configuration config;
+        config.version = 2;
+        {
+            auto hr = ::powenetics_initialise_serial_configuration(&config);
+            if (FAILED(hr)) {
+                return hr;
+            }
+        }
+
+        // Determine how many threads we start to probe the COM ports. As we
+        // expect many of them to fail with a timeout, we try probing them in
+        // parallel to reduce the time required.
+        const std::size_t max_threads = std::thread::hardware_concurrency();
+        const auto cnt_threads = (std::min)(candidates.size(), max_threads);
+
+        std::atomic<std::size_t> cur_candidate(0);
+        std::atomic<std::size_t> cur_ouput(0);
+        std::vector<std::thread> threads(cnt_threads);
+
+        for (auto& t : threads) {
+            t = std::thread([&](void) {
+                ::set_thread_name("libpowenetics probing thread");
+                auto mine = cur_candidate++;
+
+                while (mine < candidates.size()) {
+                    // Try opening the candidate and erase it from the list of
+                    // candidates if the operation failed.
+                    std::unique_ptr<powenetics_device> d(
+                        new (std::nothrow) powenetics_device());
+
+                    auto hr = (d != nullptr) ? S_OK : E_OUTOFMEMORY;
+
+                    // TODO: We need to set some timeout here.
+                    if (SUCCEEDED(hr)) {
+                        hr = d->open(candidates[mine].c_str(), &config);
+                    }
+
+                    if (SUCCEEDED(hr)) {
+                        hr = d->calibrate();
+                    }
+
+                    if (FAILED(hr)) {
+                        candidates[mine].clear();
+                    }
+
+                    mine = cur_candidate++;
+                }
+            });
+        }
+
+        // Wait for all the tester threads to exit.
+        for (auto& t : threads) {
+            if (t.joinable()) {
+                t.join();
+            }
+        }
+    }
+
+    // Count how many devices we have found and report this to 'cnt'.
+    const auto cnt_found = std::count_if(candidates.begin(), candidates.end(),
+        [](const powenetics_device::string_type &p) { return !p.empty(); });
+    const auto retval = (cnt_found <= *cnt) ? S_OK : ERROR_INSUFFICIENT_BUFFER;
+    *cnt = cnt_found;
 
     return retval;
 }

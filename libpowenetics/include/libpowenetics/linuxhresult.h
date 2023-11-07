@@ -136,7 +136,7 @@ typedef enum HRESULT_t {
     //-ENETRESET	129	/* Network dropped connection because */
     //-ECONNABORTED	130	/* Software caused connection abort */
     //-ECONNRESET	131	/* Connection reset by peer */
-    //-ENOBUFS		132	/* No buffer space available */
+    ERROR_INSUFFICIENT_BUFFER = -ENOBUFS,
     //-EISCONN		133	/* Socket is already connected */
     //-ENOTCONN	134	/* Socket is not connected */
     //-ESHUTDOWN	143	/* Can't send after socket shutdown */
