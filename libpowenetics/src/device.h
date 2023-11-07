@@ -9,6 +9,7 @@
 #include <array>
 #include <atomic>
 #include <cinttypes>
+#include <string>
 #include <thread>
 #include <vector>
 
