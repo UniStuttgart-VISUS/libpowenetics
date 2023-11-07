@@ -156,15 +156,27 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
                 t.join();
             }
         }
+
+        // Count how many devices we have found and report this to 'cnt'.
+        const auto cnt_found = std::count_if(candidates.begin(),
+            candidates.end(),
+            [](const powenetics_device::string_type &p) { return !p.empty(); });
+
+        auto retval = (cnt_found <= *cnt)
+            ? S_OK
+            : ERROR_INSUFFICIENT_BUFFER;
+        if ((*cnt = cnt_found) < 1) {
+            retval = ERROR_FILE_NOT_FOUND;
+        }
+
+        return retval;
+
+    } else {
+        // Nothing found, which is an error in any case.
+        *cnt = 0;
+        return ERROR_FILE_NOT_FOUND;
     }
 
-    // Count how many devices we have found and report this to 'cnt'.
-    const auto cnt_found = std::count_if(candidates.begin(), candidates.end(),
-        [](const powenetics_device::string_type &p) { return !p.empty(); });
-    const auto retval = (cnt_found <= *cnt) ? S_OK : ERROR_INSUFFICIENT_BUFFER;
-    *cnt = cnt_found;
-
-    return retval;
 }
 
 

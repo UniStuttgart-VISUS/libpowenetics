@@ -5,6 +5,8 @@
 
 #include <libpowenetics/powenetics.h>
 
+#include <assert.h>
+
 #if defined(_WIN32)
 #include <Windows.h>
 #include <tchar.h>
@@ -44,21 +46,25 @@ int _tmain(int argc, _TCHAR **argv) {
     powenetics_handle handle = NULL;
     HRESULT hr = S_OK;
 
-    // Initialisation phase.
+    // Initialisation phase: either open the user-defined port or probe for one
+    // Powenetics device attached to the machine.
     if (SUCCEEDED(hr)) {
         if (argc < 2) {
-            size_t cnt = 0;
-            hr = powenetics_probe(NULL, &cnt);
+            size_t cnt = 1;
+            hr = powenetics_probe(&handle, &cnt);
 
         } else {
             hr = powenetics_open(&handle, argv[1], NULL);
         }
     }
+    assert((handle != NULL) || FAILED(hr));
 
+    // Calibrate the device.
     if (SUCCEEDED(hr)) {
         hr = powenetics_calibrate(handle);
     }
 
+    // Stream data to 'on_sample'.
     if (SUCCEEDED(hr)) {
         hr = powenetics_start_streaming(handle, on_sample, NULL);
     }

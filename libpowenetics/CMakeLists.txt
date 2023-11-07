@@ -34,7 +34,12 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${SourceDirectory}>)
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} SetupAPI)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SetupAPI)
+endif ()
+
+if (POWENETICS_UseUdev)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_UDEV)
+    target_link_libraries(${PROJECT_NAME} PRIVATE udev)
 endif ()
 
 

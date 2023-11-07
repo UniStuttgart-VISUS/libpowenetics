@@ -12,6 +12,7 @@ include(CMakeDependentOption)
 option(POWENETICS_BuildTests "Build the test driver" OFF)
 option(POWENETICS_BuildCclient "Build the C-style test client" ON)
 cmake_dependent_option(POWENETICS_BuildExcellentPowenetics "Build the excellent demo programme" ON WIN32 OFF)
+cmake_dependent_option(POWENETICS_UseUdev "Use libudev to enumerate serial devices" OFF UNIX OFF)
 
 
 #  Global compiler options, which are derived from the settings above.

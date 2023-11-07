@@ -153,6 +153,7 @@ typedef enum HRESULT_t {
     // Error codes we need, but cannot map.
     E_NOTIMPL = _POWENETICS_ERROR_CODE(1),
     E_NOT_VALID_STATE = _POWENETICS_ERROR_CODE(2),
+    E_FAIL = _POWENETICS_ERROR_CODE(3),
 } HRESULT;
 
 #undef _POWENETICS_ERROR_CODE

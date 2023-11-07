@@ -7,6 +7,7 @@
 #include "device.h"
 
 #include <cassert>
+#include <memory>
 #include <regex>
 #include <string>
 
@@ -22,11 +23,46 @@
 #include <sys/types.h>
 #endif /* defined(_WIN32) */
 
+#if defined(USE_UDEV)
+#include <libudev.h>
+#endif /* defined(USE_UDEV) */
+
 #include "commands.h"
 #include "debug.h"
 #include "stream_parser_v2.h"
 #include "thread_name.h"
 
+
+#if defined(USE_UDEV)
+/// <summary>
+/// Deleter for the root <see cref="udev" /> object.
+/// </summary>
+struct delete_udev final {
+    inline void operator ()(udev *p) const {
+        ::udev_unref(p);
+    }
+};
+
+
+/// <summary>
+/// Deleter for a udev enumerator.
+/// </summary>
+struct delete_udev_device final {
+    inline void operator ()(udev_device *p) const {
+        ::udev_device_unref(p);
+    }
+};
+
+
+/// <summary>
+/// Deleter for a udev enumerator.
+/// </summary>
+struct delete_udev_enumerate final {
+    inline void operator ()(udev_enumerate *p) const {
+        ::udev_enumerate_unref(p);
+    }
+};
+#endif /* defined(USE_UDEV) */
 
 
 /*
@@ -77,6 +113,38 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
             }
         }
     } /* for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, ... */
+
+#elif defined(USE_UDEV)
+    // The better variant on Linux, which requires libudev being installed.
+    std::unique_ptr<struct udev, delete_udev> udev(::udev_new());
+    if (udev == nullptr) {
+        _powenetics_debug("Failed to create udev context.\r\n");
+        return retval;
+    }
+
+    std::unique_ptr<udev_enumerate, delete_udev_enumerate> enumerate(
+        ::udev_enumerate_new(udev.get()));
+    if (enumerate == nullptr) {
+        _powenetics_debug("Failed to create device enumerator.\r\n");
+        return retval;
+    }
+
+    ::udev_enumerate_add_match_subsystem(enumerate.get(), "tty");
+    ::udev_enumerate_scan_devices(enumerate.get());
+
+    auto entries = ::udev_enumerate_get_list_entry(enumerate.get());
+    if (entries == nullptr) {
+        _powenetics_debug("Failed to obtain device list.\r\n");
+        return retval;
+    }
+
+    udev_list_entry *entry = nullptr;
+    udev_list_entry_foreach(entry, entries) {
+        std::unique_ptr<udev_device, delete_udev_device> device(
+            ::udev_device_new_from_syspath(udev.get(),
+            ::udev_list_entry_get_name(entry)));
+        retval.push_back(::udev_device_get_devnode(device.get()));
+    }
 
 #else /* defined(_WIN32) */
     // On Linux, we need to enumerate all tty devices.
