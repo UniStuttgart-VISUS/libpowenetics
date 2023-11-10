@@ -160,6 +160,12 @@ typedef enum HRESULT_t {
 
 
 /// <summary>
+/// Does nothing on <paramref name="error" />.
+/// </summary>
+#define HRESULT_FROM_WIN32(error) (error)
+
+
+/// <summary>
 /// Answer whether <paramref name="hr" /> indicates failure.
 /// </summary>
 #define FAILED(hr) ((int) (hr) < 0)

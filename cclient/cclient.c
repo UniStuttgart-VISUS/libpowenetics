@@ -108,11 +108,13 @@ int _tmain(int argc, _TCHAR **argv) {
         hr = powenetics_start_streaming(handle, on_sample, NULL);
     }
 
+    if (SUCCEEDED(hr)) {
 #if defined(_WIN32)
-    getch();
+        getch();
 #else /* defined(_WIN32) */
-    sleep(10);
+        sleep(10);
 #endif /* defined(_WIN32) */
+    }
 
     // Cleanup phase.
     if (handle != NULL) {
