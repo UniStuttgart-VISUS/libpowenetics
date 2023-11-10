@@ -6,11 +6,15 @@
 #include <libpowenetics/powenetics.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 #if defined(_WIN32)
+#include <conio.h>
 #include <Windows.h>
 #include <tchar.h>
 #else /* defined(_WIN32) */
+#include <unistd.h>
+
 #define _tmain main
 #define _TCHAR char
 #endif /* defined(_WIN32) */
@@ -25,7 +29,42 @@
 void on_sample(_In_ powenetics_handle src,
         _In_ const powenetics_sample *sample,
         _In_opt_ void *ctx) {
-
+    printf("ATX 12V: %f V, %f A\r\n",
+        sample->atx_12v.voltage,
+        sample->atx_12v.current);
+    printf("ATX 3.3V: %f V, %f A\r\n",
+        sample->atx_3_3v.voltage,
+        sample->atx_3_3v.current);
+    printf("ATX 5V: %f V, %f A\r\n",
+        sample->atx_5v.voltage,
+        sample->atx_5v.current);
+    printf("ATX Stand-by: %f V, %f A\r\n",
+        sample->atx_stb.voltage,
+        sample->atx_stb.current);
+    printf("EPS #1: %f V, %f A\r\n",
+        sample->eps1.voltage,
+        sample->eps1.current);
+    printf("EPS #2: %f V, %f A\r\n",
+        sample->eps2.voltage,
+        sample->eps2.current);
+    printf("EPS #3: %f V, %f A\r\n",
+        sample->eps3.voltage,
+        sample->eps3.current);
+    printf("PCIe 12V #1: %f V, %f A\r\n",
+        sample->pcie_12v1.voltage,
+        sample->pcie_12v1.current);
+    printf("PCIe 12V #2: %f V, %f A\r\n",
+        sample->pcie_12v2.voltage,
+        sample->pcie_12v2.current);
+    printf("PCIe 12V #3: %f V, %f A\r\n",
+        sample->pcie_12v3.voltage,
+        sample->pcie_12v3.current);
+    printf("PEG 12V: %f V, %f A\r\n",
+        sample->peg_12v.voltage,
+        sample->peg_12v.current);
+    printf("PEG 3.3V: %f V, %f A\r\n",
+        sample->peg_3_3v.voltage,
+        sample->peg_3_3v.current);
 }
 
 
@@ -61,13 +100,19 @@ int _tmain(int argc, _TCHAR **argv) {
 
     // Calibrate the device.
     if (SUCCEEDED(hr)) {
-        hr = powenetics_calibrate(handle);
+        //hr = powenetics_calibrate(handle);
     }
 
     // Stream data to 'on_sample'.
     if (SUCCEEDED(hr)) {
         hr = powenetics_start_streaming(handle, on_sample, NULL);
     }
+
+#if defined(_WIN32)
+    getch();
+#else /* defined(_WIN32) */
+    sleep(10);
+#endif /* defined(_WIN32) */
 
     // Cleanup phase.
     if (handle != NULL) {

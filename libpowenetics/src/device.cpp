@@ -88,7 +88,7 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
     if_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
     for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, nullptr,
-        &GUID_DEVINTERFACE_COMPORT, i, &if_data); ++i) {
+            &GUID_DEVINTERFACE_COMPORT, i, &if_data); ++i) {
         DWORD size = 0;
         ::SetupDiGetDeviceInterfaceDetailW(dev_info,
             &if_data,
@@ -454,13 +454,17 @@ HRESULT powenetics_device::start(
     if (SUCCEEDED(retval)) {
         auto expected = stream_state::stopped;
         auto succeeded = this->_state.compare_exchange_strong(expected,
-            stream_state::stopping, std::memory_order::memory_order_acq_rel);
+            stream_state::starting, std::memory_order::memory_order_acq_rel);
         assert(!this->_thread.joinable() || !succeeded);
         if (!succeeded) {
             _powenetics_debug("The Powenetics device is already streaming "
                 "data.\r\n");
             retval = E_NOT_VALID_STATE;
         }
+    }
+
+    if (SUCCEEDED(retval)) {
+        this->_thread = std::thread(&powenetics_device::read, this);
     }
 
     if (SUCCEEDED(retval)) {

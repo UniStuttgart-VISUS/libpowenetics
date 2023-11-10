@@ -39,7 +39,7 @@ bool stream_parser_v2::push_back(_In_reads_(cnt) const byte_type *data,
             while (cur != nullptr) {
                 assert(cur[0] == delimiter.front());
                 assert(cur[1] == delimiter.back());
-                auto next = find_delimiter(cur + delimiter.size(), data - cur);
+                auto next = find_delimiter(cur + delimiter.size(), end - cur);
 
                 if (next != nullptr) {
                     // We found a segment between 'cur' and 'next'. We now parse
@@ -47,13 +47,9 @@ bool stream_parser_v2::push_back(_In_reads_(cnt) const byte_type *data,
                     // deliver it to the callback.
                     powenetics_sample sample;
                     sample.version = 2;
-                    if (parse_segment(sample, cur, next)) {
+                    if (parse_segment(sample, cur + delimiter.size(), next)) {
                         callback(sample);
                     }
-
-                    assert(next[0] == delimiter.front());
-                    assert(next[1] == delimiter.back());
-                    next += delimiter.size();
 
                 } else {
                     // We did not find the end of the segment after 'cur', so

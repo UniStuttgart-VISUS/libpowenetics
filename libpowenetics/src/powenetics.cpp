@@ -164,9 +164,9 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
 
         auto retval = (cnt_found <= *cnt)
             ? S_OK
-            : ERROR_INSUFFICIENT_BUFFER;
+            : HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
         if ((*cnt = cnt_found) < 1) {
-            retval = ERROR_FILE_NOT_FOUND;
+            retval = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
         }
 
         return retval;
@@ -174,7 +174,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
     } else {
         // Nothing found, which is an error in any case.
         *cnt = 0;
-        return ERROR_FILE_NOT_FOUND;
+        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
 
 }

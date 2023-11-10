@@ -46,7 +46,7 @@ bool stream_parser_v2::parse_segment(
         _In_ const byte_type *end) noexcept {
     assert(begin != nullptr);
     assert(end != nullptr);
-    assert(end > begin);
+    assert(end >= begin);
     const auto retval = (end - begin) == segment_length;
 
     if (retval) {
@@ -120,7 +120,7 @@ bool stream_parser_v2::parse_segment(
 
         // Channel 13: PCIe #1
         dst.pcie_12v1 = parse_value(cur);
-        assert(cur == end);
+        assert(cur <= end);
     }
 
     return retval;
