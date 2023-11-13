@@ -92,6 +92,12 @@ int _tmain(int argc, _TCHAR **argv) {
             size_t cnt = 1;
             hr = powenetics_probe(&handle, &cnt);
 
+            // For the demo, we can live with having only one device, so if the
+            // error indicates that there would be more, we just ignore that.
+            if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
+                hr = S_OK;
+            }
+
         } else {
             hr = powenetics_open(&handle, argv[1], NULL);
         }

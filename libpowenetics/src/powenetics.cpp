@@ -95,6 +95,11 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
         return E_POINTER;
     }
 
+    // Ensure that the counter is never valid if the output buffer is invalid.
+    if (out_handles == nullptr) {
+        *cnt = 0;
+    }
+
     // Get all serial ports as candidates where a device could be attached to.
     auto candidates = powenetics_device::probe_candidates();
 
@@ -117,6 +122,8 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
 
         std::atomic<std::size_t> cur_candidate(0);
         std::atomic<std::size_t> cur_ouput(0);
+        std::vector<std::unique_ptr<powenetics_device>> devices(
+            candidates.size());
         std::vector<std::thread> threads(cnt_threads);
 
         for (auto& t : threads) {
@@ -137,12 +144,13 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
                         hr = d->open(candidates[mine].c_str(), &config);
                     }
 
-                    if (SUCCEEDED(hr)) {
-                        hr = d->calibrate();
-                    }
+                    // TODO: what would we do for testing here?
+                    //if (SUCCEEDED(hr)) {
+                    //    hr = d->calibrate();
+                    //}
 
-                    if (FAILED(hr)) {
-                        candidates[mine].clear();
+                    if (SUCCEEDED(hr)) {
+                        devices[mine] = std::move(d);
                     }
 
                     mine = cur_candidate++;
@@ -158,14 +166,19 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
         }
 
         // Count how many devices we have found and report this to 'cnt'.
-        const auto cnt_found = std::count_if(candidates.begin(),
-            candidates.end(),
-            [](const powenetics_device::string_type &p) { return !p.empty(); });
+        devices.erase(std::remove_if(devices.begin(), devices.end(),
+            [](const std::unique_ptr<powenetics_device>& d) { return !d; }),
+            devices.end());
 
-        auto retval = (cnt_found <= *cnt)
+        // Return as much as we can.
+        for (std::size_t i = 0; (i < *cnt) && (i < devices.size()); ++i) {
+            out_handles[i] = devices[i].release();
+        }
+
+        auto retval = (candidates.size() <= *cnt)
             ? S_OK
             : HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        if ((*cnt = cnt_found) < 1) {
+        if ((*cnt = candidates.size()) < 1) {
             retval = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
         }
 

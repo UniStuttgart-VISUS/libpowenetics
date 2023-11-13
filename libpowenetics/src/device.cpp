@@ -14,6 +14,8 @@
 #if defined(_WIN32)
 #include <SetupAPI.h>
 #include <Windows.h>
+#define INITGUID
+#include <devpkey.h>
 #else /* defined(_WIN32) */
 #include <dirent.h>
 #include <fcntl.h>
@@ -65,6 +67,40 @@ struct delete_udev_enumerate final {
 #endif /* defined(USE_UDEV) */
 
 
+#if defined(_WIN32)
+/// <summary>
+/// Retrieves the given device property or an empty vector in case of an error.
+/// </summary>
+static std::vector<std::uint8_t> get_property(_In_ HDEVINFO dev_info,
+        _In_ PSP_DEVINFO_DATA dev_info_data,
+        _In_ const DEVPROPKEY& property) {
+    DWORD size = 0;
+    DEVPROPTYPE type;
+
+    ::SetupDiGetDevicePropertyW(dev_info, dev_info_data, &property, &type,
+        nullptr, 0, &size, 0);
+
+    if (size > 0) {
+        try {
+            std::vector<std::uint8_t> retval(size);
+
+            if (!::SetupDiGetDevicePropertyW(dev_info, dev_info_data, &property,
+                    &type, retval.data(), size, nullptr, 0)) {
+                retval.clear();
+            }
+
+            return retval;
+
+        } catch (std::bad_alloc) { /* Return nothing if we cannot alloc. */ }
+    }
+    // API or allocation failed at this point.
+
+    return std::vector<std::uint8_t>();
+}
+
+#endif /* defined(_WIN32) */
+
+
 /*
  * powenetics_device::probe_candidates
  */
@@ -78,41 +114,58 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
     // instead.
 
     // Create a HDEVINFO with all ports that are present.
-    auto dev_info = ::SetupDiGetClassDevsW(&GUID_CLASS_COMPORT, nullptr, NULL,
+    auto dev_info = ::SetupDiGetClassDevsW(
+        &GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR,
+        nullptr,
+        NULL,
         DIGCF_PRESENT);
 
-    // Enumerate the interface details, which provide us with the path to the
-    // device that we can open using CreateFile.
-    SP_DEVICE_INTERFACE_DATA if_data;
-    ::ZeroMemory(&if_data, sizeof(if_data));
-    if_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+    SP_DEVINFO_DATA dev_data;
+    ::ZeroMemory(&dev_data, sizeof(dev_data));
+    dev_data.cbSize = sizeof(dev_data);
 
-    for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, nullptr,
-            &GUID_DEVINTERFACE_COMPORT, i, &if_data); ++i) {
-        DWORD size = 0;
-        ::SetupDiGetDeviceInterfaceDetailW(dev_info,
-            &if_data,
-            nullptr,
-            0,
-            &size,
-            nullptr);
+    for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, i, &dev_data); ++i) {
+        SP_DEVICE_INTERFACE_DATA if_data;
+        ::ZeroMemory(&if_data, sizeof(if_data));
+        if_data.cbSize = sizeof(if_data);
 
-        if (size > 0) {
-            std::vector<std::uint8_t> data(size);
-            auto detail = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(
-                data.data());
-            detail->cbSize = static_cast<DWORD>(data.size());
+        if (::SetupDiEnumDeviceInterfaces(dev_info, &dev_data,
+                &dev_data.ClassGuid, 0, &if_data)) {
+            DWORD size = 0;
+            ::SetupDiGetDeviceInterfaceDetailW(dev_info, &if_data, nullptr, 0,
+                &size, nullptr);
 
-            if (::SetupDiGetDeviceInterfaceDetail(dev_info,
-                &if_data,
-                detail,
-                size,
-                &size,
-                nullptr)) {
-                retval.emplace_back(detail->DevicePath);
+            if (size > 0) {
+                std::vector<std::uint8_t> data(size);
+                auto d = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(
+                    data.data());
+                d->cbSize = static_cast<DWORD>(data.size());
+
+                if (::SetupDiGetDeviceInterfaceDetailW(dev_info, &if_data, d,
+                        size, &size, nullptr)) {
+                    retval.emplace_back(d->DevicePath);
+                }
+            }
+
+        } else {
+            // If for some weird reason the above fails (which it does on my
+            // machine), try reconstructing the name of the port from the
+            // friendly name.
+            auto property = ::get_property(dev_info, &dev_data,
+                ::DEVPKEY_Device_FriendlyName);
+            auto name = reinterpret_cast<const wchar_t *>(property.data());
+            std::wregex rx_com(L"COM[0-9]+", std::regex::icase);
+            std::wcmatch match;
+
+            if ((name != nullptr) && std::regex_search(name, match, rx_com)) {
+                retval.push_back(L"\\\\.\\" + match.str());
             }
         }
-    } /* for (DWORD i = 0; ::SetupDiEnumDeviceInterfaces(dev_info, ... */
+    } /* for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, ... */
+
+    if (dev_info != INVALID_HANDLE_VALUE) {
+        ::SetupDiDestroyDeviceInfoList(&dev_info);
+    }
 
 #elif defined(USE_UDEV)
     // The better variant on Linux, which requires libudev being installed.
