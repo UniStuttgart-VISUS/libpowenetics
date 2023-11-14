@@ -121,6 +121,8 @@ bool stream_parser_v2::parse_segment(
         // Channel 13: PCIe #1
         dst.pcie_12v1 = parse_value(cur);
         assert(cur <= end);
+    } else {
+        ::memset(&dst, 0, sizeof(dst));
     }
 
     return retval;
@@ -140,10 +142,10 @@ powenetics_voltage_current stream_parser_v2::parse_value(
 
     if (retval.voltage > discard_threshold) {
         retval.current = ::to_uint24(data) / 1000.0f;
-        data += 3;
     } else {
         retval.current = 0.0f;
     }
+    data += 3;
 
     return retval;
 }

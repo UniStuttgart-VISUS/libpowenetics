@@ -49,6 +49,8 @@ bool stream_parser_v2::push_back(_In_reads_(cnt) const byte_type *data,
                     sample.version = 2;
                     if (parse_segment(sample, cur + delimiter.size(), next)) {
                         callback(sample);
+                    } else {
+                        _powenetics_debug("Discarding invalid segment.\r\n");
                     }
 
                 } else {
