@@ -61,7 +61,7 @@ if (handle != NULL) {
 }
 ```
 
-If you are using C++, we provide the `visus::powenetics::unique_handle` specialisation of `std::unique_ptr`.
+If you are using C++, we provide the `visus::powenetics::unique_handle` specialisation of `std::unique_ptr` that allows for automatic management of the resources.
 
 In order to obtain data, you first need to implement a callback function to receive samples:
 ```c++
