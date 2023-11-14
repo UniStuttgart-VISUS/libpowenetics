@@ -9,6 +9,7 @@
 #include <array>
 #include <cassert>
 #include <cinttypes>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <vector>
