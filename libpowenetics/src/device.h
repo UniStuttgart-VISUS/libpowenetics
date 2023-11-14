@@ -85,6 +85,21 @@ public:
         _In_ const powenetics_serial_configuration *config) noexcept;
 
     /// <summary>
+    /// Reads at mode <paramref name="cnt" /> bytes from the serial port.
+    /// </summary>
+    /// <remarks>
+    /// This method must not be called while the device is streaming. Only
+    /// the streaming thread within the object may read at this point.
+    /// </remarks>
+    /// <param name="dst">A buffer that is able to receive at least
+    /// <paramref name="cnt" /> bytes.</param>
+    /// <param name="cnt">The size of <paramref name="dst" /> on entry, the
+    /// number of bytes written on successful exit.</param>
+    /// <returns></returns>
+    HRESULT read(_Out_writes_(cnt) byte_type *dst,
+        _Inout_ std::size_t &cnt) noexcept;
+
+    /// <summary>
     /// Instruct the device to clear all calibration.
     /// </summary>
     HRESULT reset_calibration(void) noexcept;
@@ -100,6 +115,36 @@ public:
     /// Asks the streaming thread to stop and waits for it exit.
     /// </summary>
     HRESULT stop(void) noexcept;
+
+    /// <summary>
+    /// Synchronously write the given data to the serial port.
+    /// </summary>
+    /// <remarks>
+    /// The method makes best effort to write all <paramref name="cnt" />
+    /// bytes. If this is not possible, it will fail with an error code
+    /// indicating the reason.
+    /// </remarks>
+    /// <param name="data">A pointer to at least <paramref name="cnt" />
+    /// bytes of valid data.</param>
+    /// <param name="cnt">The number of bytes to write.</param>
+    /// <returns></returns>
+    HRESULT write(_In_reads_(cnt) const byte_type *data,
+        _In_ const std::size_t cnt) noexcept;
+
+    /// <summary>
+    /// Synchronously write the given data to the serial port.
+    /// </summary>
+    template<std::size_t N>
+    inline HRESULT write(_In_ const std::array<byte_type, N>& data) noexcept {
+        return this->write(data.data(), data.size());
+    }
+
+    /// <summary>
+    /// Synchronously write the given data to the serial port.
+    /// </summary>
+    inline HRESULT write(_In_ const std::vector<byte_type>& data) noexcept {
+        return this->write(data.data(), data.size());
+    }
 
 private:
 
@@ -145,36 +190,6 @@ private:
     /// <see cref="_state" /> is set to <see cref="stream_state::stopping" />.
     /// </remarks>
     void do_read(void);
-
-    /// <summary>
-    /// Reads at mode <paramref name="cnt" /> bytes from the serial port.
-    /// </summary>
-    /// <param name="dst"></param>
-    /// <param name="cnt"></param>
-    /// <returns></returns>
-    HRESULT read(_Out_writes_(cnt) byte_type *dst,
-        _Inout_ std::size_t& cnt) noexcept;
-
-    /// <summary>
-    /// Synchronously write the given data to the serial port.
-    /// </summary>
-    HRESULT write(_In_reads_(cnt) const byte_type *data,
-        _In_ const std::size_t cnt) noexcept;
-
-    /// <summary>
-    /// Synchronously write the given data to the serial port.
-    /// </summary>
-    template<std::size_t N> inline HRESULT write(
-            _In_ const std::array<byte_type, N>& data) noexcept {
-        return this->write(data.data(), data.size());
-    }
-
-    /// <summary>
-    /// Synchronously write the given data to the serial port.
-    /// </summary>
-    inline HRESULT write(_In_ const std::vector<byte_type>& data) noexcept {
-        return this->write(data.data(), data.size());
-    }
 
     powenetics_data_callback _callback;
     void *_context;

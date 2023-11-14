@@ -10,6 +10,7 @@
 #include <cassert>
 #include <memory>
 
+#include "commands.h"
 #include "debug.h"
 #include "device.h"
 #include "thread_name.h"
@@ -147,10 +148,10 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
                         hr = d->open(candidates[mine].c_str(), &config);
                     }
 
-                    // TODO: what would we do for testing here?
-                    //if (SUCCEEDED(hr)) {
-                    //    hr = d->calibrate();
-                    //}
+                    // Test write a command.
+                    if (SUCCEEDED(hr)) {
+                        hr = d->write(commands_v2::calibration_ok);
+                    }
 
                     if (SUCCEEDED(hr)) {
                         devices[mine] = std::move(d);

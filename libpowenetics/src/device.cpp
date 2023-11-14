@@ -472,6 +472,35 @@ HRESULT powenetics_device::open(
 
 
 /*
+ * powenetics_device::read
+ */
+HRESULT powenetics_device::read(_Out_writes_(cnt) byte_type *dst,
+        _Inout_ std::size_t& cnt) noexcept {
+#if defined(_WIN32)
+    DWORD read;
+
+    if (::ReadFile(this->_handle, dst, static_cast<DWORD>(cnt), &read,
+            nullptr)) {
+        cnt = read;
+        return S_OK;
+    } else {
+        cnt = 0;
+        return HRESULT_FROM_WIN32(::GetLastError());
+    }
+
+#else /* defined(_WIN32) */
+    cnt = ::read(this->_handle, dst, cnt);
+    if (cnt < 0) {
+        cnt = 0;
+        return static_cast<HRESULT>(-errno);
+    } else {
+        return S_OK;
+    }
+#endif /* defined(_WIN32) */
+}
+
+
+/*
  * powenetics_device::reset_calibration
  */
 HRESULT powenetics_device::reset_calibration(void) noexcept {
@@ -577,6 +606,57 @@ HRESULT powenetics_device::stop(void) noexcept {
 
 
 /*
+ * powenetics_device::write
+ */
+HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
+        _In_ const std::size_t cnt) noexcept {
+    assert(this->_handle != invalid_handle);
+
+#if defined(_WIN32)
+    auto cur = data;
+    auto rem = static_cast<DWORD>(cnt);
+    DWORD written = 0;
+
+    while (::WriteFile(this->_handle, cur, rem, &written, nullptr)) {
+        if (written == 0) {
+            return S_OK;
+        }
+
+        assert(written <= rem);
+        cur += written;
+        rem -= written;
+    }
+
+    auto retval = HRESULT_FROM_WIN32(::GetLastError());
+    _powenetics_debug("I/O error while sending a command to Powenetics "
+        "v2 device.\r\n");
+    return retval;
+
+#else /* defined(_WIN32) */
+    auto cur = data;
+    auto rem = cnt;
+
+    while (rem > 0) {
+        auto written = ::write(this->_handle, cur, sizeof(rem));
+
+        if (written < 0) {
+            auto retval = static_cast<HRESULT>(-errno);
+            _powenetics_debug("I/O error while sending a command to Powenetics "
+                "v2 device.\r\n");
+            return retval;
+        }
+
+        assert(written <= rem);
+        cur += written;
+        rem -= written;
+    }
+
+    return S_OK;
+#endif /* defined(_WIN32) */
+}
+
+
+/*
  * powenetics_device::check_stopped
  */
 HRESULT powenetics_device::check_stopped(void) noexcept {
@@ -652,84 +732,4 @@ void powenetics_device::do_read(void) {
     // stream_state::running at this point.
     this->_state.store(stream_state::stopped,
         std::memory_order::memory_order_release);
-}
-
-
-/*
- * powenetics_device::read
- */
-HRESULT powenetics_device::read(_Out_writes_(cnt) byte_type *dst,
-        _Inout_ std::size_t& cnt) noexcept {
-#if defined(_WIN32)
-    DWORD read;
-
-    if (::ReadFile(this->_handle, dst, static_cast<DWORD>(cnt), &read,
-            nullptr)) {
-        cnt = read;
-        return S_OK;
-    } else {
-        cnt = 0;
-        return HRESULT_FROM_WIN32(::GetLastError());
-    }
-
-#else /* defined(_WIN32) */
-    cnt = ::read(this->_handle, dst, cnt);
-    if (cnt < 0) {
-        cnt = 0;
-        return static_cast<HRESULT>(-errno);
-    } else {
-        return S_OK;
-    }
-#endif /* defined(_WIN32) */
-}
-
-
-/*
- * powenetics_device::write
- */
-HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
-        _In_ const std::size_t cnt) noexcept {
-    assert(this->_handle != invalid_handle);
-
-#if defined(_WIN32)
-    auto cur = data;
-    auto rem = static_cast<DWORD>(cnt);
-    DWORD written = 0;
-
-    while (::WriteFile(this->_handle, cur, rem, &written, nullptr)) {
-        if (written == 0) {
-            return S_OK;
-        }
-
-        assert(written <= rem);
-        cur += written;
-        rem -= written;
-    }
-
-    auto retval = HRESULT_FROM_WIN32(::GetLastError());
-    _powenetics_debug("I/O error while sending a command to Powenetics "
-        "v2 device.\r\n");
-    return retval;
-
-#else /* defined(_WIN32) */
-    auto cur = data;
-    auto rem = cnt;
-
-    while (rem > 0) {
-        auto written = ::write(this->_handle, cur, sizeof(rem));
-
-        if (written < 0) {
-            auto retval = static_cast<HRESULT>(-errno);
-            _powenetics_debug("I/O error while sending a command to Powenetics "
-                "v2 device.\r\n");
-            return retval;
-        }
-
-        assert(written <= rem);
-        cur += written;
-        rem -= written;
-    }
-
-    return S_OK;
-#endif /* defined(_WIN32) */
 }
