@@ -173,7 +173,8 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
             [](const std::unique_ptr<powenetics_device>& d) { return !d; }),
             devices.end());
 
-        // Return as much as we can.
+        // Return as much as we can. All handles we cannot return will be closed
+        // as the local variable gets destroyed.
         for (std::size_t i = 0; (i < *cnt) && (i < devices.size()); ++i) {
             out_handles[i] = devices[i].release();
         }

@@ -6,6 +6,10 @@
 
 #pragma once
 
+#if defined(__cplusplus)
+#include <memory>
+#endif /* defined(__cplusplus) */
+
 #include "libpowenetics/api.h"
 #include "libpowenetics/sample.h"
 #include "libpowenetics/serial.h"
@@ -15,6 +19,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
+#if 0
 /// <summary>
 /// Performs the calibration of the device or erases an existing one.
 /// </summary>
@@ -43,6 +48,7 @@ HRESULT LIBPOWENETICS_API powenetics_calibrate(
     _In_ const uint8_t channel,
     _In_ const powenetics_quantity quantity,
     _In_ const uint32_t value);
+#endif
 
 /// <summary>
 /// Closes the handle to the given Powenetics v2 power measurement device.
@@ -80,6 +86,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
     _Out_writes_opt_(*cnt) powenetics_handle *out_handles,
     _Inout_ size_t *cnt);
 
+#if 0
 /// <summary>
 /// Resets the calibration of the device identified by the given handle.
 /// </summary>
@@ -92,6 +99,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
 /// </returns>
 HRESULT LIBPOWENETICS_API powenetics_reset_calibration(
     _In_ const powenetics_handle handle);
+#endif
 
 /// <summary>
 /// Puts the given Powenetics v2 power measurement device in streaming mode.
@@ -115,10 +123,36 @@ HRESULT LIBPOWENETICS_API powenetics_start_streaming(
 /// and it is safe to invalidate any previously installed callback.
 /// </remarks>
 /// <param name="handle">The handle for a Powenetics v2 device.</param>
-/// <returns></returns>
+/// <returns><c>S_OK</c> in case of success, <c>E_HANDLE</c> if
+/// <paramref name="handle" /> is invalid, another error code if for instance
+/// I/O with the device failed.</returns>
 HRESULT LIBPOWENETICS_API powenetics_stop_streaming(
     _In_ const powenetics_handle handle);
 
 #if defined(__cplusplus)
 } /* extern "C" */
+#endif /* defined(__cplusplus) */
+
+
+#if defined(__cplusplus)
+namespace visus {
+namespace powenetics {
+
+    /// <summary>
+    /// A deleter functor for <see cref="powenetics_handle" />, which can be
+    /// used for <see cref="std::unique_ptr" />.
+    /// </summary>
+    struct handle_deleter final {
+        inline void operator ()(powenetics_handle device) const {
+            ::powenetics_close(device);
+        }
+    };
+
+    /// <summary>
+    /// A unique pointer to replace <see cref="powenetics_handle" />.
+    /// </summary>
+    typedef std::unique_ptr<powenetics_device, handle_deleter> unique_handle;
+
+} /* namespace powenetics */
+} /* namespace visus */
 #endif /* defined(__cplusplus) */

@@ -9,6 +9,8 @@
 #include <thread>
 #include <vector>
 
+#include <libpowenetics/powenetics.h>
+
 #include <wil/resource.h>
 
 #include "excel_output.h"
@@ -91,7 +93,7 @@ private:
     void worker(void);
 
     wil::unique_event _event;
-    powenetics_handle _input;
+    visus::powenetics::unique_handle _input;
     std::mutex _lock;
     excel_output& _output;
     std::vector<powenetics_sample> _samples;

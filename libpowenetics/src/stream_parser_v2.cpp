@@ -57,8 +57,8 @@ bool stream_parser_v2::parse_segment(
         // request at this point. We do not do that in the library. Instead, the
         // user must do that in the callback if it is desired.
 
-        // The samples following the sequence number comprise 16 bits of voltage
-        // data followed by 24 bit of current data each.
+        // The samples following the 16-bit sequence number comprise 16 bits of
+        // voltage data followed by 24 bit of current data each.
         auto cur = begin + sizeof(std::uint16_t);
 
         // Channel 1: ATX 3.3V. The ATX 10-pin connector does not have that,
@@ -135,11 +135,11 @@ powenetics_voltage_current stream_parser_v2::parse_value(
         _In_ const float discard_threshold) noexcept {
     powenetics_voltage_current retval;
 
-    retval.voltage = to_uint16(data) / 1000.0f;
+    retval.voltage = ::to_uint16(data) / 1000.0f;
     data += sizeof(std::uint16_t);
 
     if (retval.voltage > discard_threshold) {
-        retval.current = to_uint24(data) / 1000.0f;
+        retval.current = ::to_uint24(data) / 1000.0f;
         data += 3;
     } else {
         retval.current = 0.0f;

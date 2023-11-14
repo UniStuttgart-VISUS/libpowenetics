@@ -26,7 +26,6 @@ excel_worker::excel_worker(_Inout_ powenetics_handle&& input,
  */
 excel_worker::~excel_worker(void) noexcept {
     this->stop();
-    ::powenetics_close(this->_input);
 }
 
 
@@ -38,7 +37,7 @@ void excel_worker::start(void) {
 
     // Start streaming data from the given Powenetics device.
     {
-        auto hr = powenetics_start_streaming(this->_input,
+        auto hr = powenetics_start_streaming(this->_input.get(),
             excel_worker::callback, this);
         THROW_IF_FAILED(hr);
     }
@@ -55,7 +54,7 @@ void excel_worker::start(void) {
 void excel_worker::stop(void) {
     // Stop the Powenetics device creating samples. This must be done first such
     // that the queue remains empty after what we do next.
-    ::powenetics_stop_streaming(this->_input);
+    ::powenetics_stop_streaming(this->_input.get());
 
     // Clear the queue and wake the worker thread. This is the signal for the
     // worker thread to exit. In all other cases, we wake it only when the queue
