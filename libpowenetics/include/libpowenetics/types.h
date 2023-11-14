@@ -60,6 +60,24 @@ struct powenetics_device;
 typedef struct powenetics_device *powenetics_handle;
 
 
+/// <summary>
+/// Defines the quantities that can be measured using the Powenetics v2 power
+/// measurement device.
+/// </summary>
+typedef enum LIBPOWENETICS_ENUM powenetics_quantity_t {
+
+    /// <summary>
+    /// Identifies current.
+    /// </summary>
+    current = 1,
+
+    /// <summary>
+    /// Identifies voltage.
+    /// </summary>
+    voltage = 2
+} powenetics_quantity;
+
+
 struct powenetics_sample_t;
 
 /// <summary>

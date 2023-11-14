@@ -18,8 +18,19 @@ extern "C" {
 /// <summary>
 /// Performs the calibration of the device or erases an existing one.
 /// </summary>
-/// <param name="handle"></param>
-/// <param name="mode"></param>
+/// <remarks>
+/// This feature seems to be experimental in the original implementation. While
+/// we ported this behaviour, we strongly recommend reading
+/// https://hwbusters.com/gpu/powenetics-users-manual/5/ before doing anything
+/// here as this might make your device unusable!
+/// </remarks>
+/// <param name="handle">A valid handle for a session.</param>
+/// <param name="channel">The zero-based channel to calibrate.</param>
+/// <param name="quantity">The quantity to be calibrated. At the moment, this
+/// must be <see cref="powenetics_quantity::current" />.</param>
+/// <param name="milliamperes">The reference current to calibrate to. The unit
+/// depends on the quantity being calibrated, and is milliamperes for current.
+/// </param>
 /// <returns><c>S_OK</c> in case of success,
 /// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid,
 /// <c>E_NOT_VALID_STATE</c> if the object provided is not in an
@@ -28,7 +39,10 @@ extern "C" {
 /// any platform-specific I/O error if writing to or reading from the
 /// device failed.</returns>
 HRESULT LIBPOWENETICS_API powenetics_calibrate(
-    _In_ const powenetics_handle handle);
+    _In_ const powenetics_handle handle,
+    _In_ const uint8_t channel,
+    _In_ const powenetics_quantity quantity,
+    _In_ const uint32_t value);
 
 /// <summary>
 /// Closes the handle to the given Powenetics v2 power measurement device.

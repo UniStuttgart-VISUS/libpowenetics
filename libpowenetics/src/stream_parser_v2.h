@@ -19,6 +19,7 @@
 
 #include "convert.h"
 #include "debug.h"
+#include "endian.h"
 #include "responses.h"
 
 

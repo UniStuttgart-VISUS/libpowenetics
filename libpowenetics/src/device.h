@@ -61,7 +61,16 @@ public:
     /// </summary>
     ~powenetics_device(void) noexcept;
 
-    HRESULT calibrate(void) noexcept;
+    /// <summary>
+    /// Calibrates the given channel to the given current.
+    /// </summary>
+    /// <param name="channel"></param>
+    /// <param name="quantity"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    HRESULT calibrate(_In_ const std::uint8_t channel,
+        _In_ const powenetics_quantity quantity,
+        _In_ const std::uint32_t value) noexcept;
 
     /// <summary>
     /// Close the serial port connection to the device.
@@ -135,7 +144,16 @@ private:
     /// I/O failes due to <see cref="_handle" /> being closer, or the
     /// <see cref="_state" /> is set to <see cref="stream_state::stopping" />.
     /// </remarks>
-    void read(void);
+    void do_read(void);
+
+    /// <summary>
+    /// Reads at mode <paramref name="cnt" /> bytes from the serial port.
+    /// </summary>
+    /// <param name="dst"></param>
+    /// <param name="cnt"></param>
+    /// <returns></returns>
+    HRESULT read(_Out_writes_(cnt) byte_type *dst,
+        _Inout_ std::size_t& cnt) noexcept;
 
     /// <summary>
     /// Synchronously write the given data to the serial port.

@@ -31,6 +31,7 @@
 
 #include "commands.h"
 #include "debug.h"
+#include "responses.h"
 #include "stream_parser_v2.h"
 #include "thread_name.h"
 
@@ -253,53 +254,46 @@ powenetics_device::~powenetics_device(void) noexcept {
 /*
  * powenetics_device::calibrate
  */
-HRESULT powenetics_device::calibrate(void) noexcept {
+HRESULT powenetics_device::calibrate(_In_ const std::uint8_t channel,
+        _In_ const powenetics_quantity quantity,
+        _In_ const std::uint32_t value) noexcept {
     auto retval = this->check_valid();
+
+    if (SUCCEEDED(retval) && (quantity != powenetics_quantity::current)) {
+        retval = E_INVALIDARG;
+    }
 
     // We should not calibrate while we are sampling.
     if (SUCCEEDED(retval)) {
         retval = this->check_stopped();
     }
 
-    //if (mode == 0) //Amps
-    //{
-    //    int calibration_channel = (int)m.Calibration_Channel.Value - 1;
-    //    int calibration_amperes = (int)m.Calibration_Amperes.Value * 1000; //to convert it to mA
-    //    int calibration_part1, calibration_part2, calibration_part3;
-    //    int Remainder1, Remainder2;
-    //    calibration_part1 = calibration_part2 = calibration_part3 = Remainder1 = Remainder2 = 0;
+    // Apply the configuration.
+    if (SUCCEEDED(retval)) {
+        std::array<std::uint8_t, 5> buffer;
+        buffer[0] = 0xca;
+        buffer[1] = channel;
+        ::from_uint24(buffer.data() + 2, value);
+        retval = this->write(buffer);
+    }
 
+    // Read the response.
+    std::vector<std::uint8_t> response((std::max)(
+        responses_v2::calibration_error.size(),
+        responses_v2::calibration_success.size()));
+    auto cnt = response.size();
+    if (SUCCEEDED(retval)) {
+        retval = this->read(response.data(), cnt);
+    }
 
-    //    if (calibration_amperes >= 65536)
-    //    {
-    //        calibration_part1 = calibration_amperes / 65536;
-    //        Remainder1 = calibration_amperes % 65536;
+    if (SUCCEEDED(retval)) {
+        retval = std::equal(response.begin(), response.end(),
+            responses_v2::calibration_success.begin())
+            ? S_OK
+            : E_FAIL;
+    }
 
-    //        calibration_part2 = Remainder1 / 256;
-    //        Remainder2 = Remainder1 % 256;
-    //        calibration_part3 = Remainder2;
-    //    } else if (calibration_amperes < 65536)
-    //    {
-    //        calibration_part1 = 0;
-
-    //        calibration_part2 = calibration_amperes / 256;
-    //        Remainder2 = calibration_amperes % 256;
-    //        calibration_part3 = Remainder2;
-    //    }
-
-
-    //    PMD.Write(new byte[]{ 0xCA, (byte)calibration_channel, (byte)calibration_part1, (byte)calibration_part2, (byte)calibration_part3 }, 0, 5);
-    //    await Task.Delay(100);
-
-    //    //FE-FE
-    //    if (PMD_Response.Contains(StatusCodes.Calibration_Error)) m.PMD_Cal_Response.Text = "Error!";
-    //    else if (PMD_Response.Contains(StatusCodes.Calibration_OK)) m.PMD_Cal_Response.Text = "Cal OK!";
-    //} else if (mode == 1)
-    //{
-    //    PMD.Write(PMDCommands.Clear_Calibration, 0, 4);
-    //    m.PMD_Cal_Response.Text = "Cal Reset!";
-    //}
-    return E_NOTIMPL;
+    return retval;
 }
 
 
@@ -488,6 +482,7 @@ HRESULT powenetics_device::reset_calibration(void) noexcept {
         retval = this->check_stopped();
     }
 
+    // Send the command.
     if (SUCCEEDED(retval)) {
         retval = this->write(commands_v2::clear_calibration);
     }
@@ -517,7 +512,7 @@ HRESULT powenetics_device::start(
     }
 
     if (SUCCEEDED(retval)) {
-        this->_thread = std::thread(&powenetics_device::read, this);
+        this->_thread = std::thread(&powenetics_device::do_read, this);
     }
 
     if (SUCCEEDED(retval)) {
@@ -613,9 +608,9 @@ HRESULT powenetics_device::check_valid(void) noexcept {
 
 
 /*
- * powenetics_device::read
+ * powenetics_device::do_read
  */
-void powenetics_device::read(void) {
+void powenetics_device::do_read(void) {
     set_thread_name("powenetics sampler");
 
     // Signal to everyone that we are now running. If this fails (with a strong
@@ -635,39 +630,20 @@ void powenetics_device::read(void) {
 
     std::vector<byte_type> buffer;
     buffer.resize(4 * 1024);
+    auto cnt = buffer.size();
     stream_parser_v2 parser;
 
-#if defined(_WIN32)
-    DWORD read;
-
-    while (this->check_running() && ::ReadFile(this->_handle,
-            buffer.data(),
-            static_cast<DWORD>(buffer.size()),
-            &read,
-            nullptr)) {
-        parser.push_back(buffer.data(), read,
+    while (this->check_running()
+            && SUCCEEDED(this->read(buffer.data(), cnt))) {
+        parser.push_back(buffer.data(), cnt,
                 [this](const powenetics_sample &sample) {
             if (this->_callback != nullptr) {
                 this->_callback(this, &sample, this->_context);
             }
         });
-    }
 
-#else /* defined(_WIN32) */
-    while (this->check_running()) {
-        const auto read = ::read(this->_handle, buffer.data(), buffer.size());
-        if (read > 0) {
-            parser.push_back(buffer.data(), read,
-                [this](const powenetics_sample &sample) {
-                if (this->_callback != nullptr) {
-                    this->_callback(this, &sample, this->_context);
-                }
-            });
-        } else if (errno != 0) {
-            break;
-        }
+        cnt = buffer.size();
     }
-#endif /* defined(_WIN32) */
 
     // Indicate that we are done. We do not CAS this from
     // stream_state::stopping, because a request for orderly shutdown is only
@@ -676,6 +652,35 @@ void powenetics_device::read(void) {
     // stream_state::running at this point.
     this->_state.store(stream_state::stopped,
         std::memory_order::memory_order_release);
+}
+
+
+/*
+ * powenetics_device::read
+ */
+HRESULT powenetics_device::read(_Out_writes_(cnt) byte_type *dst,
+        _Inout_ std::size_t& cnt) noexcept {
+#if defined(_WIN32)
+    DWORD read;
+
+    if (::ReadFile(this->_handle, dst, static_cast<DWORD>(cnt), &read,
+            nullptr)) {
+        cnt = read;
+        return S_OK;
+    } else {
+        cnt = 0;
+        return HRESULT_FROM_WIN32(::GetLastError());
+    }
+
+#else /* defined(_WIN32) */
+    cnt = ::read(this->_handle, dst, cnt);
+    if (cnt < 0) {
+        cnt = 0;
+        return static_cast<HRESULT>(-errno);
+    } else {
+        return S_OK;
+    }
+#endif /* defined(_WIN32) */
 }
 
 

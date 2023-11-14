@@ -18,10 +18,13 @@
 /*
  * ::powenetics_calibrate
  */
-HRESULT powenetics_calibrate(_In_ const powenetics_handle handle) {
+HRESULT powenetics_calibrate(_In_ const powenetics_handle handle,
+        _In_ const uint8_t channel,
+        _In_ const powenetics_quantity quantity,
+        _In_ const uint32_t value) {
     return (handle == nullptr)
         ? E_HANDLE
-        : handle->calibrate();
+        : handle->calibrate(channel, quantity, value);
 }
 
 

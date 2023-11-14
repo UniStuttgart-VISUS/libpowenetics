@@ -69,6 +69,58 @@ namespace functions {
             }
         }
 
+        TEST_METHOD(from_uint16) {
+            {
+                std::uint8_t buffer[2];
+                const std::uint16_t expected = 1;
+                ::from_uint16(buffer, expected);
+                Assert::AreEqual(int(expected), int(::to_uint16(buffer)), L"1", LINE_INFO());
+            }
+
+            {
+                std::uint8_t buffer[2];
+                const std::uint16_t expected = 256;
+                ::from_uint16(buffer, expected);
+                Assert::AreEqual(int(expected), int(::to_uint16(buffer)), L"256", LINE_INFO());
+            }
+
+            {
+                std::uint8_t buffer[2];
+                const std::uint16_t expected = 17000;
+                ::from_uint16(buffer, expected);
+                Assert::AreEqual(int(expected), int(::to_uint16(buffer)), L"17000", LINE_INFO());
+            }
+        }
+
+        TEST_METHOD(from_uint24) {
+            {
+                std::uint8_t buffer[3];
+                const std::uint32_t expected = 1;
+                ::from_uint24(buffer, expected);
+                Assert::AreEqual(expected, ::to_uint24(buffer), L"1", LINE_INFO());
+            }
+
+            {
+                std::uint8_t buffer[3];
+                const std::uint32_t expected = 256;
+                ::from_uint24(buffer, expected);
+                Assert::AreEqual(expected, ::to_uint24(buffer), L"256", LINE_INFO());
+            }
+
+            {
+                std::uint8_t buffer[3];
+                const std::uint32_t expected = 17000;
+                ::from_uint24(buffer, expected);
+                Assert::AreEqual(expected, ::to_uint24(buffer), L"17000", LINE_INFO());
+            }
+
+            {
+                std::uint8_t buffer[3];
+                const std::uint32_t expected = 70000;
+                ::from_uint24(buffer, expected);
+                Assert::AreEqual(expected, ::to_uint24(buffer), L"70000", LINE_INFO());
+            }
+        }
     };
 
 } /* namespace functions */

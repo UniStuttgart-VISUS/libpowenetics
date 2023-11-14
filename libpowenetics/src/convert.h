@@ -6,11 +6,28 @@
 
 #pragma once
 
-#include <cassert>
 #include <cinttypes>
 
 #include "libpowenetics/api.h"
 
+
+/// <summary>
+/// Converts the given value <paramref name="src" /> into it network-byte order
+/// representation.
+/// </summary>
+/// <param name="dst">A buffer to receive at least two bytes.</param>
+/// <param name="src"></param>
+void LIBPOWENETICS_TEST_API from_uint16(_Out_writes_(2) std::uint8_t *dst,
+    _In_ const std::uint16_t src) noexcept;
+
+/// <summary>
+/// Converts the 24-bits of given value <paramref name="src" /> into it
+/// network-byte order representation.
+/// </summary>
+/// <param name="dst">A buffer to receive at least two bytes.</param>
+/// <param name="src"></param>
+void LIBPOWENETICS_TEST_API from_uint24(_Out_writes_(3) std::uint8_t *dst,
+    _In_ const std::uint32_t src) noexcept;
 
 /// <summary>
 /// Convert two bytes in network-byte order to <see cref="std::uint16_t />.
@@ -19,16 +36,8 @@
 /// </param>
 /// <returns>The little-endian number represented by the first two bytes in
 /// <paramref name="src" />.</returns>
-inline std::uint16_t LIBPOWENETICS_TEST_API to_uint16(
-        _In_reads_(2) const std::uint8_t *src) noexcept {
-    assert(src != nullptr);
-    std::uint16_t retval;
-    auto dst = reinterpret_cast<std::uint8_t *>(&retval);
-    dst[0] = src[1];
-    dst[1] = src[0];
-    return retval;
-}
-
+std::uint16_t LIBPOWENETICS_TEST_API to_uint16(
+    _In_reads_(2) const std::uint8_t *src) noexcept;
 
 /// <summary>
 /// Convert three bytes in network-byte order to
@@ -38,13 +47,5 @@ inline std::uint16_t LIBPOWENETICS_TEST_API to_uint16(
 /// order.</param>
 /// <returns>The little-endian number represented by the first three bytes in
 /// <paramref name="src" />.</returns>
-inline std::uint32_t LIBPOWENETICS_TEST_API to_uint24(
-        _In_reads_(3) const std::uint8_t *src) noexcept {
-    assert(src != nullptr);
-    std::uint32_t retval = 0;
-    auto dst = reinterpret_cast<std::uint8_t *>(&retval);
-    dst[0] = src[2];
-    dst[1] = src[1];
-    dst[2] = src[0];
-    return retval;
-}
+std::uint32_t LIBPOWENETICS_TEST_API to_uint24(
+    _In_reads_(3) const std::uint8_t *src) noexcept;
