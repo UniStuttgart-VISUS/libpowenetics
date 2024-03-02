@@ -1,6 +1,6 @@
 ﻿// <copyright file="main.cpp" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
-// Licensed under the MIT licence. See LICENCE.txt file in the project root for full licence information.
+// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -19,7 +19,6 @@ BOOL WINAPI DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved) {
     switch (reason) {
         case DLL_PROCESS_ATTACH:
             ::DisableThreadLibraryCalls(handle);
-//            ::hTrrojanDll = hDll;
             break;
 
         case DLL_PROCESS_DETACH:

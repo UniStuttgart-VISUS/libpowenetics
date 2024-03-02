@@ -1,6 +1,6 @@
 ﻿// <copyright file="device.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
-// Licensed under the MIT licence. See LICENCE.txt file in the project root for full licence information.
+// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -97,7 +97,7 @@ public:
     /// number of bytes written on successful exit.</param>
     /// <returns></returns>
     HRESULT read(_Out_writes_(cnt) byte_type *dst,
-        _Inout_ std::size_t &cnt) noexcept;
+        _Inout_ std::size_t& cnt) noexcept;
 
     /// <summary>
     /// Instruct the device to clear all calibration.
