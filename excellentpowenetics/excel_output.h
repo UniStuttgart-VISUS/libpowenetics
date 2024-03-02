@@ -77,7 +77,12 @@ public:
 private:
 
     /// <summary>
-    /// Get column name for zero-based (!) index 'col'.
+    /// Gets the cell name for the zero-based (!) cell index.
+    /// </summary>
+    static std::wstring cell_name(_In_ const long row, _In_ const long col);
+
+    /// <summary>
+    /// Get column name for the zero-based (!) index <paramref name="col" />.
     /// <summary>
     static std::wstring column_name(_In_ const long col);
 
