@@ -117,6 +117,7 @@ int _tmain(int argc, _TCHAR **argv) {
 
     if (SUCCEEDED(hr)) {
 #if defined(_WIN32)
+        printf("Press any key to end measurement.\n");
         getch();
 #else /* defined(_WIN32) */
         sleep(10);
