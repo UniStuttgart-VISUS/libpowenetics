@@ -43,7 +43,7 @@ You can also probe for devices (this feature is experimental) like so:
 std::size_t cnt = 0;
 {
     auto hr = ::powenetics_probe(nullptr, &cnt);
-    if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) { /* Handle the error. */ }
+    if (hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) { /* Handle the error. */ }
 }
 
 // Open the handles.
