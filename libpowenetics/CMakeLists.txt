@@ -1,5 +1,5 @@
 ﻿# CMakeLists.txt
-# Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+# Copyright © 2023 - 2025 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
 # Licensed under the MIT licence. See LICENCE file in the project root for detailed information.
 
 project(libpowenetics)
