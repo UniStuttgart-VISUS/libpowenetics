@@ -90,13 +90,26 @@ int _tmain(int argc, _TCHAR **argv) {
     // Powenetics device attached to the machine.
     if (SUCCEEDED(hr)) {
         if (argc < 2) {
-            size_t cnt = 1;
-            hr = powenetics_probe(&handle, &cnt);
+            size_t cnt = 0;
+            powenetics_char *paths = NULL;
 
-            // For the demo, we can live with having only one device, so if the
-            // error indicates that there would be more, we just ignore that.
+            hr = powenetics_probe(paths, &cnt);
             if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
-                hr = S_OK;
+                paths = malloc(cnt * sizeof(powenetics_char));
+                hr = (paths == NULL) ? E_OUTOFMEMORY : S_OK;
+            }
+
+            if (SUCCEEDED(hr)) {
+                assert(paths != NULL);
+                hr = powenetics_probe(paths, &cnt);
+            }
+
+            if (SUCCEEDED(hr)) {
+                hr = powenetics_open(&handle, paths, NULL);
+            }
+
+            if (paths != NULL) {
+                free(paths);
             }
 
         } else {

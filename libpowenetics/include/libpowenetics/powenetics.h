@@ -83,26 +83,26 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
     _In_opt_ const powenetics_serial_configuration *config);
 
 /// <summary>
-/// Opens at most <paramref name="cnt" /> Powenetics v2 power measurement
-/// devices connected to the local machine.
+/// Searches the local machine for Powenetics v2 power measurement
+/// devices and returns the paths as multi-sz string.
 /// </summary>
 /// <remarks>
 /// This method may take significant time to check all ports found on the
 /// device.
 /// </remarks>
-/// <param name="out_handles">A buffer to receive at least
-/// <paramref name="cnt" /> handles to devices.</param>
-/// <param name="cnt">On entry, the number of handles that can be saved to
+/// <param name="out_ports">A buffer to receive at least
+/// <paramref name="cnt" /> characters.</param>
+/// <param name="cnt">On entry, the number characters that can be saved to
 /// <paramref name="out_handles" />, on exit, the number of handles that have
-/// actually been saved.</param>
+/// actually been written or would be required to store all paths.</param>
 /// <returns><c>S_OK</c> in case the operation succeeded,
 /// <c>HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)</c> if there were more
-/// devices than could be stored to <paramref name="out_handles" />, 
+/// devices than could be stored to <paramref name="out_ports" />, 
 /// <c>HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)</c> if no device at all
 /// was found, another error code if establishing the connection to the
 /// device failed.</returns>
 HRESULT LIBPOWENETICS_API powenetics_probe(
-    _Out_writes_opt_(*cnt) powenetics_handle *out_handles,
+    _Out_writes_opt_z_(*cnt) powenetics_char *out_ports,
     _Inout_ size_t *cnt);
 
 #if 0

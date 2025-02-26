@@ -92,7 +92,7 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
  * ::powenetics_probe
  */
 HRESULT LIBPOWENETICS_API powenetics_probe(
-        _Out_writes_opt_(*cnt) powenetics_handle *out_handles,
+        _Out_writes_opt_z_(*cnt) powenetics_char *out_ports,
         _Inout_ size_t *cnt) {
     if (cnt == nullptr) {
         _powenetics_debug("A valid number of handles must be provided.\r\n");
@@ -100,7 +100,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
     }
 
     // Ensure that the counter is never valid if the output buffer is invalid.
-    if (out_handles == nullptr) {
+    if (out_ports == nullptr) {
         *cnt = 0;
     }
 
@@ -125,9 +125,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
         const auto cnt_threads = (std::min)(candidates.size(), max_threads);
 
         std::atomic<std::size_t> cur_candidate(0);
-        std::atomic<std::size_t> cur_ouput(0);
-        std::vector<std::unique_ptr<powenetics_device>> devices(
-            candidates.size());
+        std::vector<bool> devices(candidates.size());
         std::vector<std::thread> threads(cnt_threads);
 
         for (auto& t : threads) {
@@ -153,10 +151,10 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
                         hr = d->write(commands_v2::calibration_ok);
                     }
 
-                    if (SUCCEEDED(hr)) {
-                        devices[mine] = std::move(d);
-                    }
+                    // Remember whether this is a valid device.
+                    devices[mine] = SUCCEEDED(hr);
 
+                    // Try the next one.
                     mine = cur_candidate++;
                 }
             });
@@ -169,32 +167,51 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
             }
         }
 
-        // Count how many devices we have found and report this to 'cnt'.
-        devices.erase(std::remove_if(devices.begin(), devices.end(),
-            [](const std::unique_ptr<powenetics_device>& d) { return !d; }),
-            devices.end());
-
-        // Return as much as we can. All handles we cannot return will be closed
-        // as the local variable gets destroyed.
-        for (std::size_t i = 0; (i < *cnt) && (i < devices.size()); ++i) {
-            out_handles[i] = devices[i].release();
+        // Determine the required buffer length.
+        std::size_t required = 0;
+        for (std::size_t i = 0; i < candidates.size(); ++i) {
+            if (devices[i]) {
+                assert(!candidates[i].empty());
+                required += candidates[i].length() + 1;
+            }
         }
 
-        auto retval = (candidates.size() <= *cnt)
-            ? S_OK
-            : HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        if ((*cnt = candidates.size()) < 1) {
-            retval = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        // If we require nothing, there is no device. Otherwise, we need an
+        // additional character to terminate the multi-sz.
+        if (required == 0) {
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        } else {
+            ++required;
         }
 
-        return retval;
+        // If the buffer is too small, report the required size.
+        if (*cnt < required) {
+            *cnt = required;
+            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+        }
+
+        // We have devices and sufficient space for their paths.
+        {
+            auto dst = out_ports;
+
+            for (std::size_t i = 0; i < candidates.size(); ++i) {
+                if (devices[i]) {
+                    dst = std::copy(candidates[i].begin(),
+                        candidates[i].end(),
+                        dst);
+                    *dst++ = 0;
+                }
+            }
+
+            *dst = 0;
+        }
+
+        return S_OK;
 
     } else {
-        // Nothing found, which is an error in any case.
-        *cnt = 0;
+        // There wasn't even a candidate to check ...
         return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
-
 }
 
 
