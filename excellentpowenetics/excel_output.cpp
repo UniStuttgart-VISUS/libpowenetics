@@ -1,5 +1,6 @@
 ﻿// <copyright file="excel_output.cpp" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -121,48 +122,84 @@ excel_output& excel_output::operator <<(_In_ const powenetics_sample& rhs) {
     }
 
     auto row = this->last_row();
-    long col = 0;
+    long col = 0, col_i, col_u;
 
     // If this is the first row, write the header.
     if (row == 0) {
         this->write_value(L"Timestamp", row, col++);
         this->write_value(L"Sequence Number", row, col++);
 
-        this->write_value(L"ATX 12V (U)", row, col++);
-        this->write_value(L"ATX 12V (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"ATX 12V [V]", row, col_u);
+        this->write_value(L"ATX 12V [A]", row, col_i);
+        this->write_value(L"ATX 12V [W]", row, col++);
 
-        this->write_value(L"ATX 3.3V (U)", row, col++);
-        this->write_value(L"ATX 3.3V (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"ATX 3.3V [V]", row, col_u);
+        this->write_value(L"ATX 3.3V [A]", row, col_i);
+        this->write_value(L"ATX 3.3V [W]", row, col++);
 
-        this->write_value(L"ATX 5V (U)", row, col++);
-        this->write_value(L"ATX 5V (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"ATX 5V [V]", row, col_u);
+        this->write_value(L"ATX 5V [A]", row, col_i);
+        this->write_value(L"ATX 5V [W]", row, col++);
 
-        this->write_value(L"ATX STB (U)", row, col++);
-        this->write_value(L"ATX STB (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"ATX STB [V]", row, col_u);
+        this->write_value(L"ATX STB [A]", row, col_i);
+        this->write_value(L"ATX STB [W]", row, col++);
 
-        this->write_value(L"EPS #1 (U)", row, col++);
-        this->write_value(L"EPS #1 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"EPS #1 [V]", row, col_u);
+        this->write_value(L"EPS #1 [A]", row, col_i);
+        this->write_value(L"EPS #1 [W]", row, col++);
 
-        this->write_value(L"EPS #2 (U)", row, col++);
-        this->write_value(L"EPS #2 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"EPS #2 [V]", row, col_u);
+        this->write_value(L"EPS #2 [A]", row, col_i);
+        this->write_value(L"EPS #2 [W]", row, col++);
 
-        this->write_value(L"EPS #3 (U)", row, col++);
-        this->write_value(L"EPS #3 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"EPS #3 [V]", row, col_u);
+        this->write_value(L"EPS #3 [A]", row, col_i);
+        this->write_value(L"EPS #3 [W]", row, col++);
 
-        this->write_value(L"PCIe 12V #1 (U)", row, col++);
-        this->write_value(L"PCIe 12V #1 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"PCIe 12V #1 [V]", row, col_u);
+        this->write_value(L"PCIe 12V #1 [A]", row, col_i);
+        this->write_value(L"PCIe 12V #1 [W]", row, col++);
 
-        this->write_value(L"PCIe 12V #2 (U)", row, col++);
-        this->write_value(L"PCIe 12V #2 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"PCIe 12V #2 [V]", row, col_u);
+        this->write_value(L"PCIe 12V #2 [A]", row, col_i);
+        this->write_value(L"PCIe 12V #2 [W]", row, col++);
 
-        this->write_value(L"PCIe 12V #3 (U)", row, col++);
-        this->write_value(L"PCIe 12V #3 (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"PCIe 12V #3 [V]", row, col_u);
+        this->write_value(L"PCIe 12V #3 [A]", row, col_i);
+        this->write_value(L"PCIe 12V #3 [W]", row, col++);
 
-        this->write_value(L"PEG 12V (U)", row, col++);
-        this->write_value(L"PEG 12V (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"PEG 12V [V]", row, col_u);
+        this->write_value(L"PEG 12V [A]", row, col_i);
+        this->write_value(L"PEG 12V [W]", row, col++);
 
-        this->write_value(L"PEG 3.3V (U)", row, col++);
-        this->write_value(L"PEG 3.3V (I)", row, col++);
+        col_u = col++;
+        col_i = col++;
+        this->write_value(L"PEG 3.3V [V]", row, col_u);
+        this->write_value(L"PEG 3.3V [A]", row, col_i);
+        this->write_value(L"PEG 3.3V [A]", row, col++);
 
         ++row;
         col = 0;
@@ -171,43 +208,99 @@ excel_output& excel_output::operator <<(_In_ const powenetics_sample& rhs) {
     this->write_value(rhs.timestamp, row, col++);
     this->write_value(rhs.sequence_number, row, col++);
 
-    this->write_value(rhs.atx_12v.voltage, row, col++);
-    this->write_value(rhs.atx_12v.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.atx_12v.voltage, row, col_u);
+    this->write_value(rhs.atx_12v.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.atx_3_3v.voltage, row, col++);
-    this->write_value(rhs.atx_3_3v.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.atx_3_3v.voltage, row, col_u);
+    this->write_value(rhs.atx_3_3v.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.atx_5v.voltage, row, col++);
-    this->write_value(rhs.atx_5v.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.atx_5v.voltage, row, col_u);
+    this->write_value(rhs.atx_5v.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.atx_stb.voltage, row, col++);
-    this->write_value(rhs.atx_stb.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.atx_stb.voltage, row, col_u);
+    this->write_value(rhs.atx_stb.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.eps1.voltage, row, col++);
-    this->write_value(rhs.eps1.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.eps1.voltage, row, col_u);
+    this->write_value(rhs.eps1.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.eps2.voltage, row, col++);
-    this->write_value(rhs.eps2.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.eps2.voltage, row, col_u);
+    this->write_value(rhs.eps2.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.eps3.voltage, row, col++);
-    this->write_value(rhs.eps3.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.eps3.voltage, row, col_u);
+    this->write_value(rhs.eps3.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.pcie_12v1.voltage, row, col++);
-    this->write_value(rhs.pcie_12v1.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.pcie_12v1.voltage, row, col_u);
+    this->write_value(rhs.pcie_12v1.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.pcie_12v2.voltage, row, col++);
-    this->write_value(rhs.pcie_12v2.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.pcie_12v2.voltage, row, col_u);
+    this->write_value(rhs.pcie_12v2.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.pcie_12v3.voltage, row, col++);
-    this->write_value(rhs.pcie_12v3.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.pcie_12v3.voltage, row, col_u);
+    this->write_value(rhs.pcie_12v3.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.peg_12v.voltage, row, col++);
-    this->write_value(rhs.peg_12v.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.peg_12v.voltage, row, col_u);
+    this->write_value(rhs.peg_12v.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
-    this->write_value(rhs.peg_3_3v.voltage, row, col++);
-    this->write_value(rhs.peg_3_3v.current, row, col++);
+    col_u = col++;
+    col_i = col++;
+    this->write_value(rhs.peg_3_3v.voltage, row, col_u);
+    this->write_value(rhs.peg_3_3v.current, row, col_i);
+    this->write_formula(cell_name(row, col_u) + L"*"
+        + cell_name(row, col_u), row, col++);
 
     return *this;
+}
+
+
+/*
+ * excel_output::cell_name
+ */
+std::wstring excel_output::cell_name(_In_ const long row, _In_ const long col) {
+    return column_name(col) + std::to_wstring(row + 1);
 }
 
 

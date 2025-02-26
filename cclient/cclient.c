@@ -1,5 +1,6 @@
 ﻿// <copyright file="cclient.c" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -116,6 +117,7 @@ int _tmain(int argc, _TCHAR **argv) {
 
     if (SUCCEEDED(hr)) {
 #if defined(_WIN32)
+        printf("Press any key to end measurement.\n");
         getch();
 #else /* defined(_WIN32) */
         sleep(10);

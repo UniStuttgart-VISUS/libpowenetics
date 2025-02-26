@@ -1,7 +1,7 @@
 ﻿// <copyright file="magic_auto_lock.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
-// Licensed under the MIT licence. See LICENCE.txt file in the project root for full licence information.
 // <author>Christoph Müller</author>
 
 #pragma once

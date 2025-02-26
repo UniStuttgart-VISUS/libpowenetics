@@ -1,5 +1,6 @@
 ﻿// <copyright file="excel_output.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 Visualisierungsinstitut der Universität Stuttgart. Alle Rechte vorbehalten.
+// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
@@ -76,7 +77,12 @@ public:
 private:
 
     /// <summary>
-    /// Get column name for zero-based (!) index 'col'.
+    /// Gets the cell name for the zero-based (!) cell index.
+    /// </summary>
+    static std::wstring cell_name(_In_ const long row, _In_ const long col);
+
+    /// <summary>
+    /// Get column name for the zero-based (!) index <paramref name="col" />.
     /// <summary>
     static std::wstring column_name(_In_ const long col);
 

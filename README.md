@@ -43,7 +43,7 @@ You can also probe for devices (this feature is experimental) like so:
 std::size_t cnt = 0;
 {
     auto hr = ::powenetics_probe(nullptr, &cnt);
-    if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) { /* Handle the error. */ }
+    if (hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) { /* Handle the error. */ }
 }
 
 // Open the handles.
@@ -81,7 +81,17 @@ You can then use this function to start the sampling:
 Delivery of data can be stopped using `::powenetics_stop_streaming(handle)`, which will block until all buffered samples have been delivered. Closing the handle will automatically stop streaming. `powenetics_close_handle` will also block until it is safe to discard all resources used for sampling.
 
 ## Demo programmes
-TODO
+### cclient
+This is the simplest possible demo for obtaining samples in C. The programme probes for Powenetics v2 devices attached to the computer and dumps their result to the console if no command line argument was provided. The programme accepts one optional command line argument, which is the path of the COM port to open.
+
+### excellentpowenetics
+This demo programme uses Excel automation to create a spreadsheet to which it logs data it receives from a Powenetics v2 device. The programme has the following command line arguments:
+
+| Name| Description |
+| --- | --- |
+| /port [port] | The name of the COM port the Powenetics v2 device is connected to, for instance, "COM3". If empty, the programme will probe for devices and use the first one it can find. |
+| /output [path] | The path where the Excel spreadsheet should be saved. If empty, a visible instance of Excel will be started, which will not be persisted automatically. |
+| /visible | Forces the Excel instance to be visible, even if a path to save the spreadsheet to was provided. |
 
 ## Acknowledgments
 This work was partially funded by Deutsche Forschungsgemeinschaft (DFG) as part of [SFB/Transregio 161](https://www.sfbtrr161.de) (project ID 251654672).
