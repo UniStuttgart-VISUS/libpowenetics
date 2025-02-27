@@ -46,11 +46,19 @@ std::size_t cnt = 0;
     if (hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) { /* Handle the error. */ }
 }
 
-// Open the handles.
-std::vector<powenetics_handle> handles(cnt);
+// Get the port names.
+std::vector<powenetics_char> ports;
 {
-    auto hr = ::powenetics_probe(handles.data(), &cnt);
+    auto hr = ::powenetics_probe(ports.data(), &cnt);
     if (FAILED(hr)) { /* Handle the error. */ }
+}
+
+// Open the handles for the ports, which are a registry-style multi-sz.
+std::vector<powenetics_handle> handles(cnt);
+for (auto p = ports.c_str(); *p != 0;) {
+    auto hr = ::powenetics_open(&handlesi], p, nullptr);
+    if (FAILED(hr)) { /* Handle the error. */ }
+    while (*p++ != 0);
 }
 ```
 
