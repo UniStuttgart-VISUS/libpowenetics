@@ -48,15 +48,17 @@ std::size_t cnt = 0;
 
 // Get the port names.
 std::vector<powenetics_char> ports;
+ports.resize(cnt);
 {
     auto hr = ::powenetics_probe(ports.data(), &cnt);
     if (FAILED(hr)) { /* Handle the error. */ }
 }
 
 // Open the handles for the ports, which are a registry-style multi-sz.
-std::vector<powenetics_handle> handles(cnt);
+std::vector<powenetics_handle> handles;
 for (auto p = ports.c_str(); *p != 0;) {
-    auto hr = ::powenetics_open(&handlesi], p, nullptr);
+    handles.emplace_back(nullptr);
+    auto hr = ::powenetics_open(&handles.back(), p, nullptr);
     if (FAILED(hr)) { /* Handle the error. */ }
     while (*p++ != 0);
 }
