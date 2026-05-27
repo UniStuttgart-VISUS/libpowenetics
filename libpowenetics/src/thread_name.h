@@ -13,7 +13,7 @@
 #else /* defined(_WIN32) */
 #include <pthread.h>
 
-#include "libpowenetics/linuxsal.h"
+#include "libpowenetics/nosal.h"
 #endif /* defined(_WIN32) */
 
 

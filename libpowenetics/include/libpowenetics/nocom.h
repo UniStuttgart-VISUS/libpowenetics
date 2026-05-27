@@ -1,11 +1,11 @@
-﻿// <copyright file="linuxhresult.h" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="nocom.h" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
-#if !defined(_LIBPOWENETICS_LINUXHRESULT_H)
-#define _LIBPOWENETICS_LINUXHRESULT_H
+#if !defined(_LIBPOWENETICS_NOCOM_H)
+#define _LIBPOWENETICS_NOCOM_H
 #pragma once
 
 #if defined(_WIN32)
@@ -17,7 +17,7 @@
 
 // Declare a custom error code. Note that facility 4 is FACILITY_ITF on Windows,
 // which stands for user-defined codes.
-#define _POWENETICS_ERROR_CODE(hr) (hr | ((4 << 16) | 0x80000000))
+#define _BENCHLAB_ERROR_CODE(hr) (hr | ((4 << 16) | 0x80000000))
 
 /// <summary>
 /// The type used to report the status of the API.
@@ -34,6 +34,7 @@ typedef enum HRESULT_t {
 
     // Error codes that can be somehow mapped to errno.
     // -EPERM /* Not root* /,
+    E_NOT_SET = -ENOENT,
     ERROR_FILE_NOT_FOUND = -ENOENT,
     // -ESRCH/* No such process			*/
     ERROR_IO_PENDING = -EINTR,
@@ -42,6 +43,7 @@ typedef enum HRESULT_t {
     ERROR_FILE_TOO_LARGE = -E2BIG,
     // -ENOEXEC /* Exec format error			*/
     E_HANDLE = -EBADF,
+    ERROR_INVALID_HANDLE = -EBADF,
     ERROR_NO_MORE_FILES = -ECHILD,
     WSATRY_AGAIN = -EAGAIN,
     E_OUTOFMEMORY = -ENOMEM,
@@ -153,12 +155,12 @@ typedef enum HRESULT_t {
     //-ESTALE		151	/* Stale NFS file handle */
 
     // Error codes we need, but cannot map.
-    E_NOTIMPL = _POWENETICS_ERROR_CODE(1),
-    E_NOT_VALID_STATE = _POWENETICS_ERROR_CODE(2),
-    E_FAIL = _POWENETICS_ERROR_CODE(3),
+    E_NOTIMPL = _BENCHLAB_ERROR_CODE(1),
+    E_NOT_VALID_STATE = _BENCHLAB_ERROR_CODE(2),
+    E_FAIL = _BENCHLAB_ERROR_CODE(3),
 } HRESULT;
 
-#undef _POWENETICS_ERROR_CODE
+#undef _BENCHLAB_ERROR_CODE
 
 
 /// <summary>
@@ -177,4 +179,4 @@ typedef enum HRESULT_t {
 /// </summary>
 #define SUCCEEDED(hr) ((int) (hr) >= 0)
 
-#endif /* !defined(_LIBPOWENETICS_LINUXHRESULT_H) */
+#endif /* !defined(_LIBPOWENETICS_NOCOM_H) */

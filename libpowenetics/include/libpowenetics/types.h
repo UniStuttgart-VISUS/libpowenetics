@@ -17,7 +17,7 @@
 #endif /* defined(_WIN32) */
 
 #if !defined(_WIN32)
-#include "libpowenetics/linuxhresult.h"
+#include "libpowenetics/nocom.h"
 #endif /* !defined(_WIN32) */
 
 

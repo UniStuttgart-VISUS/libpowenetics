@@ -32,7 +32,7 @@
 
 
 #if !defined(_WIN32)
-#include "libpowenetics/linuxsal.h"
+#include "libpowenetics/nosal.h"
 #endif /* !defined(_WIN32) */
 
 #endif /* !defined(_LIBPOWENETICS_API_H) */
