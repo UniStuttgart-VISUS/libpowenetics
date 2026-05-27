@@ -1,11 +1,12 @@
 ﻿// <copyright file="convert.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_CONVERT_H)
+#define _LIBPOWENETICS_CONVERT_H
 #pragma once
-
 #include <cinttypes>
 
 #include "libpowenetics/api.h"
@@ -49,3 +50,5 @@ std::uint16_t LIBPOWENETICS_TEST_API to_uint16(
 /// <paramref name="src" />.</returns>
 std::uint32_t LIBPOWENETICS_TEST_API to_uint24(
     _In_reads_(3) const std::uint8_t *src) noexcept;
+
+#endif /* !defined(_LIBPOWENETICS_CONVERT_H) */

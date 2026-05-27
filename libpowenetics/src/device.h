@@ -1,9 +1,11 @@
 ﻿// <copyright file="device.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_DEVICE_H)
+#define _LIBPOWENETICS_DEVICE_H
 #pragma once
 
 #include <array>
@@ -197,3 +199,5 @@ private:
     std::atomic<stream_state> _state;
     std::thread _thread;
 };
+
+#endif /* !defined(_LIBPOWENETICS_DEVICE_H) */

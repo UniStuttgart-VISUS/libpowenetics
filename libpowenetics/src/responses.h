@@ -1,9 +1,11 @@
 ﻿// <copyright file="responses.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_RESPONSES_H)
+#define _LIBPOWENETICS_RESPONSES_H
 #pragma once
 
 #include "libpowenetics/api.h"
@@ -35,3 +37,5 @@ namespace responses_v2 {
     };
 
 } /* namespace responses_v2 */
+
+#endif /* !defined(_LIBPOWENETICS_RESPONSES_H) */

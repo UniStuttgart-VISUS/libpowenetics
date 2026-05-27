@@ -1,9 +1,11 @@
 ﻿// <copyright file="api.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_API_H)
+#define _LIBPOWENETICS_API_H
 #pragma once
 
 
@@ -32,3 +34,5 @@
 #if !defined(_WIN32)
 #include "libpowenetics/linuxsal.h"
 #endif /* !defined(_WIN32) */
+
+#endif /* !defined(_LIBPOWENETICS_API_H) */

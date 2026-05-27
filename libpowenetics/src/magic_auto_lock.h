@@ -1,9 +1,11 @@
 ﻿// <copyright file="magic_auto_lock.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2021 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2021 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_MAGIC_AUTO_LOCK_H)
+#define _LIBPOWENETICS_MAGIC_AUTO_LOCK_H
 #pragma once
 
 #include <mutex>
@@ -25,3 +27,5 @@
 // Declares a std::unique_lock for 'l'.
 #define MAGIC_AUTO_LOCK(l) \
 std::unique_lock<decltype(l)> _POWENETICS_UNIQUE_VARIABLE(_l)(l)
+
+#endif /* !defined(_LIBPOWENETICS_MAGIC_AUTO_LOCK_H) */

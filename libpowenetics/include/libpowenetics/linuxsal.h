@@ -1,9 +1,11 @@
 ﻿// <copyright file="linuxsal.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_LINUXSAL_H)
+#define _LIBPOWENETICS_LINUXSAL_H
 #pragma once
 
 #if defined(_WIN32)
@@ -37,3 +39,5 @@
 #define _Ret_valid_
 #define _Ret_z_
 #define _When_(expr, annotes)
+
+#endif /* !defined(_LIBPOWENETICS_LINUXSAL_H)*/

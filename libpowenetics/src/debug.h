@@ -4,6 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_DEBUG_H)
+#define _LIBPOWENETICS_DEBUG_H
 #pragma once
 
 #if defined(_WIN32)
@@ -25,3 +27,5 @@
 #else /* (defined(DEBUG) || defined(_DEBUG)) */
 #define _powenetics_debug(msg) 
 #endif /* (defined(DEBUG) || defined(_DEBUG)) */
+
+#endif /* !defined(_LIBPOWENETICS_DEBUG_H) */

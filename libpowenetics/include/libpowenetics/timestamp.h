@@ -1,9 +1,11 @@
 ﻿// <copyright file="timestamp.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_TIMESTAMP_H)
+#define _LIBPOWENETICS_TIMESTAMP_H
 #pragma once
 
 #include "libpowenetics/api.h"
@@ -43,3 +45,5 @@ powenetics_timestamp LIBPOWENETICS_API powenetics_make_timestamp(void);
 #if defined(__cplusplus)
 } /* extern "C" */
 #endif /* defined(__cplusplus) */
+
+#endif /* !defined(_LIBPOWENETICS_TIMESTAMP_H) */

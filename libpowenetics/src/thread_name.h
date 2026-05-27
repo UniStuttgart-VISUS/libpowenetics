@@ -1,9 +1,11 @@
 // <copyright file="thread_name.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2022 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2022 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_THREAD_NAME_H)
+#define _LIBPOWENETICS_THREAD_NAME_H
 #pragma once
 
 #if defined(_WIN32)
@@ -37,3 +39,5 @@ void set_thread_name(_In_ const native_thread_id thread_id,
 /// </summary>
 /// <param name="thread_name"></param>
 void set_thread_name(_In_z_ const char* thread_name);
+
+#endif /* !defined(_LIBPOWENETICS_THREAD_NAME_H) */

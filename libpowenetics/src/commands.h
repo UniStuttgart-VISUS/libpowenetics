@@ -4,6 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_COMMANDS_H)
+#define _LIBPOWENETICS_COMMANDS_H
 #pragma once
 
 #include "libpowenetics/api.h"
@@ -52,3 +54,5 @@ namespace commands_v2 {
     };
 
 } /* namespace commands_v2 */
+
+#endif /* !defined(_LIBPOWENETICS_COMMANDS_H) */

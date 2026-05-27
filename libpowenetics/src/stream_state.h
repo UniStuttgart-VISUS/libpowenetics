@@ -1,9 +1,11 @@
 ﻿// <copyright file="stream_state.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_STREAM_STATE_H)
+#define _LIBPOWENETICS_STREAM_STATE_H
 #pragma once
 
 
@@ -38,3 +40,5 @@ enum class stream_state {
     /// </summary>
     stopping
 };
+
+#endif /* !defined(_LIBPOWENETICS_STREAM_STATE_H) */

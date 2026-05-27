@@ -1,9 +1,11 @@
 ﻿// <copyright file="sample.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_SAMPLE_H)
+#define _LIBPOWENETICS_SAMPLE_H
 #pragma once
 
 #include "libpowenetics/api.h"
@@ -132,3 +134,5 @@ typedef struct LIBPOWENETICS_API powenetics_sample_t {
 
     /* End of Powenetics v2, future versions must add fields below. */
 } powenetics_sample;
+
+#endif /* !defined(_LIBPOWENETICS_SAMPLE_H)*/

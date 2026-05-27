@@ -1,9 +1,11 @@
 ﻿// <copyright file="stream_parser_v2.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_LIBPOWENETICS_STREAM_PARSER_V2_H)
+#define _LIBPOWENETICS_STREAM_PARSER_V2_H
 #pragma once
 
 #include <array>
@@ -133,3 +135,5 @@ private:
 };
 
 #include "stream_parser_v2.inl"
+
+#endif /* !defined(_LIBPOWENETICS_STREAM_PARSER_V2_H) */
