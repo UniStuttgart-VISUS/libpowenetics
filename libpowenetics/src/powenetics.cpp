@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 
 #include "commands.h"
 #include "debug.h"
@@ -93,7 +95,8 @@ HRESULT powenetics_open(_Out_ powenetics_handle *out_handle,
  */
 HRESULT LIBPOWENETICS_API powenetics_probe(
         _Out_writes_opt_z_(*cnt) powenetics_char *out_ports,
-        _Inout_ size_t *cnt) {
+        _Inout_ size_t *cnt,
+        _In_ const size_t timeout) {
     if (cnt == nullptr) {
         _powenetics_debug("A valid number of handles must be provided.\r\n");
         return E_POINTER;
@@ -146,13 +149,27 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
                         hr = d->open(candidates[mine].c_str(), &config);
                     }
 
-                    // Test write a command.
+                    // Test sampling.
+                    std::atomic<bool> working(false);
                     if (SUCCEEDED(hr)) {
-                        hr = d->write(commands_v2::calibration_ok);
+                        hr = d->start([](
+                                powenetics_handle source,
+                                const struct powenetics_sample_t *sample,
+                                void *context) {
+                            auto w = static_cast<std::atomic<bool> *>(context);
+                            w->store(true);
+                        }, &working);
+                    }
+
+                    // Wait for a sample to arrive.
+                    if (SUCCEEDED(hr)) {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(
+                            timeout));
+                        auto stop = d->stop();
                     }
 
                     // Remember whether this is a valid device.
-                    devices[mine] = SUCCEEDED(hr);
+                    devices[mine] = working.load();
 
                     // Try the next one.
                     mine = cur_candidate++;

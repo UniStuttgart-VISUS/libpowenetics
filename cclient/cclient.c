@@ -94,7 +94,7 @@ int _tmain(int argc, _TCHAR **argv) {
             size_t cnt = 0;
             powenetics_char *paths = NULL;
 
-            hr = powenetics_probe(paths, &cnt);
+            hr = powenetics_probe(paths, &cnt, 500);
             if (hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
                 paths = malloc(cnt * sizeof(powenetics_char));
                 hr = (paths == NULL) ? E_OUTOFMEMORY : S_OK;
@@ -102,7 +102,7 @@ int _tmain(int argc, _TCHAR **argv) {
 
             if (SUCCEEDED(hr)) {
                 assert(paths != NULL);
-                hr = powenetics_probe(paths, &cnt);
+                hr = powenetics_probe(paths, &cnt, 500);
             }
 
             if (SUCCEEDED(hr)) {

@@ -97,6 +97,9 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
 /// <param name="cnt">On entry, the number characters that can be saved to
 /// <paramref name="out_ports" />, on exit, the number of handles that have
 /// actually been written or would be required to store all paths.</param>
+/// <param name="timeout">The timeout, in milliseconds, for probing each
+/// COM port for Powenetics samples in order to be sure that we are dealing
+/// with a Powenetics v2 device.</param>
 /// <returns><c>S_OK</c> in case the operation succeeded,
 /// <c>HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)</c> if there were more
 /// devices than could be stored to <paramref name="out_ports" />, 
@@ -105,7 +108,8 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
 /// device failed.</returns>
 HRESULT LIBPOWENETICS_API powenetics_probe(
     _Out_writes_opt_z_(*cnt) powenetics_char *out_ports,
-    _Inout_ size_t *cnt);
+    _Inout_ size_t *cnt,
+    _In_ const size_t timeout);
 
 #if 0
 /// <summary>
