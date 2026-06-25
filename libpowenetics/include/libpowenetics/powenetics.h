@@ -95,7 +95,7 @@ HRESULT LIBPOWENETICS_API powenetics_open(_Out_ powenetics_handle *out_handle,
 /// <param name="out_ports">A buffer to receive at least
 /// <paramref name="cnt" /> characters.</param>
 /// <param name="cnt">On entry, the number characters that can be saved to
-/// <paramref name="out_handles" />, on exit, the number of handles that have
+/// <paramref name="out_ports" />, on exit, the number of handles that have
 /// actually been written or would be required to store all paths.</param>
 /// <returns><c>S_OK</c> in case the operation succeeded,
 /// <c>HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)</c> if there were more
