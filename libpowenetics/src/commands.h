@@ -1,5 +1,5 @@
 ﻿// <copyright file="commands.h" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -16,8 +16,12 @@
 namespace commands_v2 {
 
     /// <summary>
-    /// TODO:
+    /// Firmware update command for putting the device into PIC32UBL HID
+    /// bootloader (VID_04D8/PID_003C) mode.
     /// </summary>
+    /// <remarks>
+    /// The device will stay in this mode until reflashed.
+    /// </remarks>
     constexpr std::array<std::uint8_t, 9> bootload_mode {
         0xCA, 0xAC, 0xBD, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45
     };

@@ -27,7 +27,7 @@
 /// This is the abstraction of the power measurement device which holds the
 /// handle of the serial port from which we receive our samples.
 /// </summary>
-struct LIBPOWENETICS_TEST_API powenetics_device final {
+class LIBPOWENETICS_TEST_API powenetics_device final {
 
 public:
 

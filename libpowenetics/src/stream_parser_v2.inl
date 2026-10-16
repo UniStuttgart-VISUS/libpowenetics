@@ -1,5 +1,5 @@
 ﻿// <copyright file="stream_parser_v2.inl" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -19,7 +19,7 @@ bool stream_parser_v2::push_back(_In_reads_(cnt) const byte_type *data,
     if (this->_buffer.empty()) {
         // If the buffer is empty, we first check the input in-place without
         // buffering it. Whatever is not part of a segment will be pushed to
-        // the _buffer in the end and preserved for the next call.
+        // the '_buffer' in the end and preserved for the next call.
         auto cur = find_delimiter(data, cnt);
 
         if (cur == nullptr) {

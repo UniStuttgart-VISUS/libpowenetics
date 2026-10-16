@@ -154,6 +154,7 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
             // friendly name.
             auto property = ::get_property(dev_info, &dev_data,
                 ::DEVPKEY_Device_FriendlyName);
+            //DEVPKEY_Device_HardwareIds
             auto name = reinterpret_cast<const wchar_t *>(property.data());
             std::wregex rx_com(L"COM[0-9]+", std::regex::icase);
             std::wcmatch match;
@@ -585,14 +586,6 @@ HRESULT powenetics_device::stop(void) noexcept {
                 "device that was not streaming data in the first place.\n\n");
             retval = E_NOT_VALID_STATE;
         }
-    }
-
-    // If the handle is valid, put the device back in bootload mode. Note that
-    // it is important to do that *after* requesting the thread to exit, because
-    // if the thread does not receive any data from the device, the I/O will
-    // block and the only way to exit is closing the handle.
-    if (SUCCEEDED(retval)) {
-        retval = this->write(commands_v2::bootload_mode);
     }
 
     // Our contract states that the sampler thread must not run anymore once the
