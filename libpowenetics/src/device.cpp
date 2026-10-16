@@ -277,7 +277,7 @@ HRESULT powenetics_device::calibrate(
         buffer[1] = channel;
 
         if (quantity == powenetics_quantity::voltage) {
-            buffer[1] += 12;
+            buffer[1] += 13;
         }
 
         ::from_uint24(buffer.data() + 2, millis);
