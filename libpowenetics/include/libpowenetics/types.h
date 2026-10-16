@@ -71,12 +71,12 @@ typedef enum LIBPOWENETICS_ENUM powenetics_quantity_t {
     /// <summary>
     /// Identifies current.
     /// </summary>
-    current = 1,
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_quantity, current) = 1,
 
     /// <summary>
     /// Identifies voltage.
     /// </summary>
-    voltage = 2
+    LIBPOWENETICS_ENUM_SCOPE(powenetics_quantity, voltage) = 2
 } powenetics_quantity;
 
 

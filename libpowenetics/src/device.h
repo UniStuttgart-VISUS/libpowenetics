@@ -67,12 +67,13 @@ public:
     /// Calibrates the given channel to the given current.
     /// </summary>
     /// <param name="channel"></param>
-    /// <param name="quantity"></param>
-    /// <param name="value"></param>
+    /// <param name="quantity">The quantity to calibrate.</param>
+    /// <param name="value">The value in Volts for voltage and Amperes for
+    /// current.</param>
     /// <returns></returns>
     HRESULT calibrate(_In_ const std::uint8_t channel,
         _In_ const powenetics_quantity quantity,
-        _In_ const std::uint32_t value) noexcept;
+        _In_ const float value) noexcept;
 
     /// <summary>
     /// Close the serial port connection to the device.

@@ -21,7 +21,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#if 0
+#if defined(POWERNETICS_WITH_CALIBRATION)
 /// <summary>
 /// Performs the calibration of the device or erases an existing one.
 /// </summary>
@@ -35,27 +35,30 @@ extern "C" {
 /// <param name="channel">The zero-based channel to calibrate.</param>
 /// <param name="quantity">The quantity to be calibrated. At the moment, this
 /// must be <see cref="powenetics_quantity::current" />.</param>
-/// <param name="milliamperes">The reference current to calibrate to. The unit
-/// depends on the quantity being calibrated, and is milliamperes for current.
+/// <param name="value">The reference current or voltage to calibrate to. The
+/// unit depends on the quantity being calibrated, and is Amperes for current
+/// and Volts for voltage.
 /// </param>
-/// <returns><c>S_OK</c> in case of success,
-/// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid,
+/// <returns><c>S_OK</c> in case of success;
+/// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid;
 /// <c>E_NOT_VALID_STATE</c> if the object provided is not in an
 /// acceptable state to perform the operation, namely if the serial
 /// connection is not open,
 /// any platform-specific I/O error if writing to or reading from the
-/// device failed.</returns>
+/// device failed;
+/// <c>E_FAIL</c> if the device failed to calibrate, in which case you should
+/// wait for a few seconds and try again.</returns>
 HRESULT LIBPOWENETICS_API powenetics_calibrate(
     _In_ const powenetics_handle handle,
     _In_ const uint8_t channel,
     _In_ const powenetics_quantity quantity,
-    _In_ const uint32_t value);
-#endif
+    _In_ const float value);
+#endif /* defined(POWERNETICS_WITH_CALIBRATION) */
 
 /// <summary>
 /// Closes the handle to the given Powenetics v2 power measurement device.
 /// </summary>
-/// <param name="handle"></param>
+/// <param name="handle">The handle for a Powenetics v2 device.</param>
 /// <returns><c>S_OK</c> in case of success,
 /// <c>E_HANDLE</c> if <paramref name="handle" /> is invalid.</returns>
 HRESULT LIBPOWENETICS_API powenetics_close(_In_ const powenetics_handle handle);
@@ -68,7 +71,7 @@ HRESULT LIBPOWENETICS_API powenetics_close(_In_ const powenetics_handle handle);
 /// device in case of success,</param>
 /// <param name="com_port">The path to the COM port. The format of this path
 /// is platform-specific. For instance, on Windows, this would be something
-/// like &quot;\\.\COM3&quot;, whereas on Linux, you would use somethin
+/// like &quot;\\.\COM3&quot;, whereas on Linux, you would use something
 /// like &quot;/dev/ttyACM0&quot;.</param>
 /// <param name="config">The configuration used for the serial port. It is safe
 /// to pass <c>nullptr</c>, in which case the function will obtain the default
@@ -111,7 +114,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
     _Inout_ size_t *cnt,
     _In_ const size_t timeout);
 
-#if 0
+#if defined(POWERNETICS_WITH_CALIBRATION)
 /// <summary>
 /// Resets the calibration of the device identified by the given handle.
 /// </summary>
@@ -124,7 +127,7 @@ HRESULT LIBPOWENETICS_API powenetics_probe(
 /// </returns>
 HRESULT LIBPOWENETICS_API powenetics_reset_calibration(
     _In_ const powenetics_handle handle);
-#endif
+#endif /* defined(POWERNETICS_WITH_CALIBRATION) */
 
 /// <summary>
 /// Puts the given Powenetics v2 power measurement device in streaming mode.
@@ -141,11 +144,15 @@ HRESULT LIBPOWENETICS_API powenetics_start_streaming(
     _In_opt_ void *context);
 
 /// <summary>
-/// Returns the given Powenetics n2 power measurement to startup state.
+/// Stops the streaming of samples to the registered callback.
 /// </summary>
 /// <remarks>
-/// This method blocks until the thread delivering the samples actually stopped
-/// and it is safe to invalidate any previously installed callback.
+/// <para>This method blocks until the thread delivering the samples actually
+/// stopped and it is safe to invalidate any previously installed callback.
+/// </para>
+/// <para>Note that the hardware cannot actually be instructed to stop sending
+/// samples, wherefore the device will continue sending them while we do not
+/// read them.</para>
 /// </remarks>
 /// <param name="handle">The handle for a Powenetics v2 device.</param>
 /// <returns><c>S_OK</c> in case of success, <c>E_HANDLE</c> if

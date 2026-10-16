@@ -24,7 +24,7 @@
 HRESULT powenetics_calibrate(_In_ const powenetics_handle handle,
         _In_ const uint8_t channel,
         _In_ const powenetics_quantity quantity,
-        _In_ const uint32_t value) {
+        _In_ const float value) {
     return (handle == nullptr)
         ? E_HANDLE
         : handle->calibrate(channel, quantity, value);

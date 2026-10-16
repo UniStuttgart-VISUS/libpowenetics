@@ -1,5 +1,5 @@
 ﻿// <copyright file="device.cpp" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -98,7 +98,6 @@ static std::vector<std::uint8_t> get_property(_In_ HDEVINFO dev_info,
 
     return std::vector<std::uint8_t>();
 }
-
 #endif /* defined(_WIN32) */
 
 
@@ -255,9 +254,10 @@ powenetics_device::~powenetics_device(void) noexcept {
 /*
  * powenetics_device::calibrate
  */
-HRESULT powenetics_device::calibrate(_In_ const std::uint8_t channel,
+HRESULT powenetics_device::calibrate(
+        _In_ const std::uint8_t channel,
         _In_ const powenetics_quantity quantity,
-        _In_ const std::uint32_t value) noexcept {
+        _In_ const float value) noexcept {
     auto retval = this->check_valid();
 
     if (SUCCEEDED(retval) && (quantity != powenetics_quantity::current)) {
@@ -271,17 +271,22 @@ HRESULT powenetics_device::calibrate(_In_ const std::uint8_t channel,
 
     // Apply the configuration.
     if (SUCCEEDED(retval)) {
+        const auto millis = static_cast<std::uint32_t>(value * 1000.0f);
         std::array<std::uint8_t, 5> buffer;
         buffer[0] = 0xca;
         buffer[1] = channel;
-        ::from_uint24(buffer.data() + 2, value);
+
+        if (quantity == powenetics_quantity::voltage) {
+            buffer[1] += 12;
+        }
+
+        ::from_uint24(buffer.data() + 2, millis);
         retval = this->write(buffer);
     }
 
     // Read the response.
-    std::vector<std::uint8_t> response((std::max)(
-        responses_v2::calibration_error.size(),
-        responses_v2::calibration_success.size()));
+    std::array<std::uint8_t, (std::max)(responses_v2::calibration_error.size(),
+        responses_v2::calibration_success.size())> response;
     auto cnt = response.size();
     if (SUCCEEDED(retval)) {
         retval = this->read(response.data(), cnt);

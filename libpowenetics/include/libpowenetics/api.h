@@ -31,8 +31,10 @@
 #endif /* defined(LIBPOWENETICS_EXPOSE_TO_TESTING) */
 
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <sal.h>
+#else /* defined(_WIN32) */
 #include "libpowenetics/nosal.h"
-#endif /* !defined(_WIN32) */
+#endif /* defined(_WIN32) */
 
 #endif /* !defined(_LIBPOWENETICS_API_H) */

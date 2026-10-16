@@ -17,7 +17,7 @@
 
 // Declare a custom error code. Note that facility 4 is FACILITY_ITF on Windows,
 // which stands for user-defined codes.
-#define _BENCHLAB_ERROR_CODE(hr) (hr | ((4 << 16) | 0x80000000))
+#define _POWENETICS_ERROR_CODE(hr) (hr | ((4 << 16) | 0x80000000))
 
 /// <summary>
 /// The type used to report the status of the API.
@@ -155,12 +155,12 @@ typedef enum HRESULT_t {
     //-ESTALE		151	/* Stale NFS file handle */
 
     // Error codes we need, but cannot map.
-    E_NOTIMPL = _BENCHLAB_ERROR_CODE(1),
-    E_NOT_VALID_STATE = _BENCHLAB_ERROR_CODE(2),
-    E_FAIL = _BENCHLAB_ERROR_CODE(3),
+    E_NOTIMPL = _POWENETICS_ERROR_CODE(1),
+    E_NOT_VALID_STATE = _POWENETICS_ERROR_CODE(2),
+    E_FAIL = _POWENETICS_ERROR_CODE(3),
 } HRESULT;
 
-#undef _BENCHLAB_ERROR_CODE
+#undef _POWENETICS_ERROR_CODE
 
 
 /// <summary>
