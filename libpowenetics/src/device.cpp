@@ -7,6 +7,8 @@
 #include "device.h"
 
 #include <cassert>
+#include <chrono>
+#include <limits>
 #include <memory>
 #include <regex>
 #include <string>
@@ -101,6 +103,31 @@ static std::vector<std::uint8_t> get_property(_In_ HDEVINFO dev_info,
 #endif /* defined(_WIN32) */
 
 
+/// <summary>
+/// THe size of the read buffer, in bytes.
+/// </summary>
+static constexpr std::size_t buffer_size = 4 * 1024;
+
+
+/// <summary>
+/// Indicates an invalid timestamp.
+/// </summary>
+static constexpr powenetics_timestamp invalid_timestamp
+    = (std::numeric_limits<powenetics_timestamp>::max)();
+
+
+/// <summary>
+/// The generic product ID of the Powenetics v2 device.
+/// </summary>
+static constexpr auto product_id = L"PID_000A";
+
+
+/// <summary>
+/// Microchip's vendor ID, which is used by the Powenetics v2 device.
+/// </summary>
+static constexpr auto vendor_id = L"VID_04D8";
+
+
 /*
  * powenetics_device::probe_candidates
  */
@@ -112,6 +139,9 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
     // Windows 10 could use https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getcommports
     // but we want the code to be as portable as possible, so we use SetupAPI
     // instead.
+    static const std::wregex rx_com(L"COM[0-9]+", std::regex::icase);
+    static const std::wregex rx_pid(product_id, std::regex::icase);
+    static const std::wregex rx_vid(vendor_id, std::regex::icase);
 
     // Create a HDEVINFO with all ports that are present.
     auto dev_info = ::SetupDiGetClassDevsW(
@@ -153,14 +183,30 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
             // friendly name.
             auto property = ::get_property(dev_info, &dev_data,
                 ::DEVPKEY_Device_FriendlyName);
-            //DEVPKEY_Device_HardwareIds
             auto name = reinterpret_cast<const wchar_t *>(property.data());
-            std::wregex rx_com(L"COM[0-9]+", std::regex::icase);
             std::wcmatch match;
 
-            if ((name != nullptr) && std::regex_search(name, match, rx_com)) {
-                retval.push_back(L"\\\\.\\" + match.str());
+            if (name == nullptr) {
+                continue;
             }
+
+            if (!std::regex_search(name, match, rx_com)) {
+                continue;
+            }
+
+            property = ::get_property(dev_info, &dev_data,
+                ::DEVPKEY_Device_HardwareIds);
+            auto hwid = reinterpret_cast<const wchar_t *>(property.data());
+
+            if (!std::regex_search(hwid, match, rx_pid)) {
+                continue;
+            }
+
+            if (!std::regex_search(hwid, match, rx_vid)) {
+                continue;
+            }
+
+            retval.push_back(L"\\\\.\\" + match.str());
         }
     } /* for (DWORD i = 0; ::SetupDiEnumDeviceInfo(dev_info, ... */
 
@@ -232,7 +278,9 @@ powenetics_device::powenetics_device(void) noexcept
     : _callback(nullptr),
     _context(nullptr),
     _handle(invalid_handle),
-    _state(stream_state::stopped) { }
+    _state(stream_state::stopped),
+    _sequence_number(0),
+    _stopped(invalid_timestamp) { }
 
 
 /*
@@ -258,10 +306,17 @@ HRESULT powenetics_device::calibrate(
         _In_ const std::uint8_t channel,
         _In_ const powenetics_quantity quantity,
         _In_ const float value) noexcept {
-    auto retval = this->check_valid();
+    auto retval = this->check_never_ran();
 
-    if (SUCCEEDED(retval) && (quantity != powenetics_quantity::current)) {
-        retval = E_INVALIDARG;
+    switch (quantity) {
+        case powenetics_quantity::current:
+            __fallthrough;
+        case powenetics_quantity::voltage:
+            break;
+
+        default:
+            _powenetics_debug("The given quantity is invalid.\r\n");
+            retval = E_INVALIDARG;
     }
 
     // We should not calibrate while we are sampling.
@@ -367,6 +422,17 @@ HRESULT powenetics_device::open(
             _powenetics_debug("Updating state of COM port failed.\r\n");
             return retval;
         }
+    }
+
+    {
+        COMMPROP props;
+        if (!::GetCommProperties(this->_handle, &props)) {
+            auto retval = HRESULT_FROM_WIN32(::GetLastError());
+            _powenetics_debug("Retrieving properties of COM port failed.\r\n");
+            return retval;
+        }
+
+        //props.dwCurrentRxQueue;
     }
 
 #else /* defined(_WIN32) */
@@ -510,12 +576,7 @@ HRESULT powenetics_device::read(_Out_writes_(cnt) byte_type *dst,
  * powenetics_device::reset_calibration
  */
 HRESULT powenetics_device::reset_calibration(void) noexcept {
-    auto retval = this->check_valid();
-
-    // We should not reset the calibration while we are sampling.
-    if (SUCCEEDED(retval)) {
-        retval = this->check_stopped();
-    }
+    auto retval = this->check_never_ran();
 
     // Send the command.
     if (SUCCEEDED(retval)) {
@@ -536,14 +597,20 @@ HRESULT powenetics_device::start(
 
     if (SUCCEEDED(retval)) {
         auto expected = stream_state::stopped;
-        auto succeeded = this->_state.compare_exchange_strong(expected,
-            stream_state::starting, std::memory_order::memory_order_acq_rel);
+        const auto succeeded = this->_state.compare_exchange_strong(
+            expected,
+            stream_state::starting,
+            std::memory_order::memory_order_acq_rel);
         assert(!this->_thread.joinable() || !succeeded);
         if (!succeeded) {
             _powenetics_debug("The Powenetics device is already streaming "
                 "data.\r\n");
             retval = E_NOT_VALID_STATE;
         }
+    }
+
+    if (SUCCEEDED(retval)) {
+        retval = this->discard_stale();
     }
 
     if (SUCCEEDED(retval)) {
@@ -562,6 +629,11 @@ HRESULT powenetics_device::start(
 
     if (SUCCEEDED(retval)) {
         retval = this->write(commands_v2::calibration_ok);
+    }
+
+    if (SUCCEEDED(retval)) {
+        // Magic number from Aris...
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     if (SUCCEEDED(retval)) {
@@ -655,6 +727,26 @@ HRESULT powenetics_device::write(_In_reads_(cnt) const byte_type *data,
 
 
 /*
+ * powenetics_device::check_never_ran
+ */
+HRESULT powenetics_device::check_never_ran(void) noexcept {
+    auto hr = this->check_stopped();
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = (this->_stopped == invalid_timestamp) ? S_OK : E_NOT_VALID_STATE;
+
+    if (FAILED(hr)) {
+        _powenetics_debug("The Powenetics v2 sampler thread has already been "
+            "started and stopped at least once.\r\n");
+    }
+
+    return hr;
+}
+
+
+/*
  * powenetics_device::check_stopped
  */
 HRESULT powenetics_device::check_stopped(void) noexcept {
@@ -686,6 +778,37 @@ HRESULT powenetics_device::check_valid(void) noexcept {
 
 
 /*
+ * powenetics_device::discard_stale
+ */
+HRESULT powenetics_device::discard_stale(void) noexcept {
+    assert(SUCCEEDED(this->check_stopped()));
+
+    if (this->_stopped == invalid_timestamp) {
+        // We never ran, so there is nothing to discard.
+        return S_OK;
+    }
+
+    std::vector<byte_type> buffer;
+    buffer.resize(buffer_size);
+    auto cnt = buffer.size();
+    auto done = false;
+    stream_parser_v2 parser;
+
+    while (SUCCEEDED(this->read(buffer.data(), cnt)) && !done) {
+        parser.push_back(buffer.data(), cnt,
+            [&done, this](const powenetics_sample& sample) {
+                this->_sequence_number = sample.sequence_number;
+                // TODO: How do we actually decide whether we reached the end of the stale data?
+                done = true;
+            });
+        cnt = buffer.size();
+    }
+
+    return S_OK;
+}
+
+
+/*
  * powenetics_device::do_read
  */
 void powenetics_device::do_read(void) {
@@ -707,21 +830,26 @@ void powenetics_device::do_read(void) {
     }
 
     std::vector<byte_type> buffer;
-    buffer.resize(4 * 1024);
+    buffer.resize(buffer_size);
     auto cnt = buffer.size();
     stream_parser_v2 parser;
 
     while (this->check_running()
             && SUCCEEDED(this->read(buffer.data(), cnt))) {
         parser.push_back(buffer.data(), cnt,
-                [this](const powenetics_sample &sample) {
+                [this](const powenetics_sample& sample) {
+            this->_sequence_number = sample.sequence_number;
             if (this->_callback != nullptr) {
                 this->_callback(this, &sample, this->_context);
             }
         });
-
         cnt = buffer.size();
     }
+
+    // Remember when we stopped delivering data. This is later being used to
+    // determine whether we have ever ran the sampler or not. Other threads
+    // should only access this variable if the sampler is not running.
+    this->_stopped = powenetics_make_timestamp();
 
     // Indicate that we are done. We do not CAS this from
     // stream_state::stopping, because a request for orderly shutdown is only

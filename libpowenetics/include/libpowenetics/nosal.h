@@ -21,6 +21,10 @@
 #define _Check_return_
 #endif /* !defined(_Check_return_) */
 
+#if !defined(__fallthrough)
+#define __fallthrough do { } while (0)
+#endif /* !defined(__fallthrough) */
+
 #if !defined(_In_)
 #define _In_
 #endif /* !defined(_In_) */

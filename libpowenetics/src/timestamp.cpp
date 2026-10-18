@@ -1,5 +1,5 @@
 ﻿// <copyright file="timestamp.cpp" company="Visualisierungsinstitut der Universität Stuttgart">
-// Copyright © 2023 - 2024 Visualisierungsinstitut der Universität Stuttgart.
+// Copyright © 2023 - 2026 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
 // <author>Christoph Müller</author>
@@ -14,7 +14,7 @@
 
 
 /// <summary>
-/// The 100ns period defining the reolution of <see cref="FILETIME" />.
+/// The 100ns period defining the resolution of <see cref="FILETIME" />.
 /// </summary>
 typedef std::ratio<1, 10000000> filetime_period;
 

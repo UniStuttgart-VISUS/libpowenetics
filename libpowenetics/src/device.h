@@ -11,6 +11,7 @@
 #include <array>
 #include <atomic>
 #include <cinttypes>
+#include <new>
 #include <string>
 #include <thread>
 #include <vector>
@@ -18,9 +19,18 @@
 #include "libpowenetics/api.h"
 #include "libpowenetics/sample.h"
 #include "libpowenetics/serial.h"
+#include "libpowenetics/timestamp.h"
 
 #include "stream_parser_v2.h"
 #include "stream_state.h"
+
+
+#if defined(__cpp_lib_hardware_interference_size)
+static constexpr auto atomic_alignment
+    = std::hardware_destructive_interference_size;
+#else /* defined(__cpp_lib_hardware_interference_size) */
+static constexpr std::size_t atomic_alignment = 64;
+#endif /* defined(__cpp_lib_hardware_interference_size) */
 
 
 /// <summary>
@@ -164,6 +174,14 @@ private:
 #endif /* defined(_WIN32) */
 
     /// <summary>
+    /// Checks whether the sampler thread is not running and never ran. This is
+    /// a relevant information because the device itself can never leave
+    /// streaming mode, i.e. if it was ever started, nothing else but streaming
+    /// can be done until the device is reset.
+    /// </summary>
+    HRESULT check_never_ran(void) noexcept;
+
+    /// <summary>
     /// Check whether the thread is still in
     ///  <see cref="stream_state::running" />.
     /// </summary>
@@ -183,6 +201,11 @@ private:
     HRESULT check_valid(void) noexcept;
 
     /// <summary>
+    /// Reads all data that might be stale.
+    /// </summary>
+    HRESULT discard_stale(void) noexcept;
+
+    /// <summary>
     /// The method executed in <see cref="_thread" /> to continuously read data
     /// from the serial port.
     /// </summary>
@@ -197,8 +220,11 @@ private:
     powenetics_data_callback _callback;
     void *_context;
     handle_type _handle;
-    std::atomic<stream_state> _state;
     std::thread _thread;
+
+    alignas(atomic_alignment) std::atomic<stream_state> _state;
+    std::uint16_t _sequence_number;
+    powenetics_timestamp _stopped;
 };
 
 #endif /* !defined(_LIBPOWENETICS_DEVICE_H) */
