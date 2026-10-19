@@ -8,6 +8,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <regex>
@@ -123,6 +124,13 @@ static constexpr auto product_id = L"PID_000A";
 
 
 /// <summary>
+/// A ready string that will be read from the COM port if the device is ready
+/// and has no stale data.
+/// </summary>
+static constexpr auto ready_string = "PMD is ready!";
+
+
+/// <summary>
 /// Microchip's vendor ID, which is used by the Powenetics v2 device.
 /// </summary>
 static constexpr auto vendor_id = L"VID_04D8";
@@ -182,6 +190,18 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
             // machine), try reconstructing the name of the port from the
             // friendly name.
             auto property = ::get_property(dev_info, &dev_data,
+                ::DEVPKEY_Device_HardwareIds);
+            auto hwid = reinterpret_cast<const wchar_t *>(property.data());
+
+            if (!std::regex_search(hwid, rx_pid)) {
+                continue;
+            }
+
+            if (!std::regex_search(hwid, rx_vid)) {
+                continue;
+            }
+
+            property = ::get_property(dev_info, &dev_data,
                 ::DEVPKEY_Device_FriendlyName);
             auto name = reinterpret_cast<const wchar_t *>(property.data());
             std::wcmatch match;
@@ -191,18 +211,6 @@ std::vector<powenetics_device::string_type> powenetics_device::probe_candidates(
             }
 
             if (!std::regex_search(name, match, rx_com)) {
-                continue;
-            }
-
-            property = ::get_property(dev_info, &dev_data,
-                ::DEVPKEY_Device_HardwareIds);
-            auto hwid = reinterpret_cast<const wchar_t *>(property.data());
-
-            if (!std::regex_search(hwid, match, rx_pid)) {
-                continue;
-            }
-
-            if (!std::regex_search(hwid, match, rx_vid)) {
                 continue;
             }
 
@@ -422,17 +430,6 @@ HRESULT powenetics_device::open(
             _powenetics_debug("Updating state of COM port failed.\r\n");
             return retval;
         }
-    }
-
-    {
-        COMMPROP props;
-        if (!::GetCommProperties(this->_handle, &props)) {
-            auto retval = HRESULT_FROM_WIN32(::GetLastError());
-            _powenetics_debug("Retrieving properties of COM port failed.\r\n");
-            return retval;
-        }
-
-        //props.dwCurrentRxQueue;
     }
 
 #else /* defined(_WIN32) */
@@ -781,27 +778,46 @@ HRESULT powenetics_device::check_valid(void) noexcept {
  * powenetics_device::discard_stale
  */
 HRESULT powenetics_device::discard_stale(void) noexcept {
-    assert(SUCCEEDED(this->check_stopped()));
+    assert(this->_state.load() == stream_state::starting);
+    assert(SUCCEEDED(this->check_valid()));
+    static const auto ready_string_length = ::strlen(ready_string);
 
-    if (this->_stopped == invalid_timestamp) {
-        // We never ran, so there is nothing to discard.
-        return S_OK;
+    std::size_t sys_buffer_size = 0;
+#if defined(_WIN32)
+    {
+        COMMPROP com_props;
+        if (!::GetCommProperties(this->_handle, &com_props)) {
+            auto retval = HRESULT_FROM_WIN32(::GetLastError());
+            _powenetics_debug("Retrieving properties of COM port failed.\r\n");
+            return retval;
+        }
+
+        sys_buffer_size = com_props.dwCurrentRxQueue;
     }
+#else /* defined(_WIN32) */
+    // TODO: figure this out. Could be 64K as for pipes.
+    sys_buffer_size = 64 * 1024;
+#endif/* defined(_WIN32) */
 
     std::vector<byte_type> buffer;
-    buffer.resize(buffer_size);
+    buffer.resize((std::max)((std::max)(buffer_size, sys_buffer_size),
+        ready_string_length));
+    auto cur = buffer.data();
     auto cnt = buffer.size();
-    auto done = false;
-    stream_parser_v2 parser;
 
-    while (SUCCEEDED(this->read(buffer.data(), cnt)) && !done) {
-        parser.push_back(buffer.data(), cnt,
-            [&done, this](const powenetics_sample& sample) {
-                this->_sequence_number = sample.sequence_number;
-                // TODO: How do we actually decide whether we reached the end of the stale data?
-                done = true;
-            });
-        cnt = buffer.size();
+    while ((cnt > 0) && SUCCEEDED(this->read(buffer.data(), cnt))) {
+        if ((cnt > ready_string_length) && std::equal(buffer.begin(),
+                buffer.begin() + ready_string_length, ready_string)) {
+            // If we find the magic string of a just started device, there
+            // is no junk and we can exit.
+            return S_OK;
+        }
+
+        // Otherwise, read a full COM buffer and discard everything. At his
+        // point, we do not care about whether we read a full frame or not,
+        // because the start method will resync anyway.
+        cur += cnt;
+        cnt = buffer.size() - (cur - buffer.data());
     }
 
     return S_OK;
